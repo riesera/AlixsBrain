@@ -1,0 +1,148 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, sans-serif;
+  background: #f4f6f8;
+  color: #111827;
+}
+
+.app-shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+header {
+  margin-bottom: 24px;
+}
+
+header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+}
+
+header p {
+  margin: 0;
+  color: #4b5563;
+}
+
+.capture-panel,
+.review-panel {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.capture-panel h2,
+.review-panel h2 {
+  margin-top: 0;
+}
+
+label {
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 12px 14px;
+  margin-top: 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  background: #ffffff;
+  font: inherit;
+}
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #1d4ed8;
+}
+
+.status-message {
+  padding: 12px 14px;
+  margin-bottom: 18px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.board {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.board h3 {
+  margin-top: 0;
+}
+
+.board-items {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.card h4 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.card p {
+  margin: 0 0 10px;
+  color: #4b5563;
+  font-size: 0.95rem;
+}
+
+.card small {
+  display: block;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.card button {
+  background: #10b981;
+}
+
+.card button.complete {
+  background: #6b7280;
+}
+
+@media (max-width: 700px) {
+  .app-shell {
+    padding: 16px;
+  }
+}

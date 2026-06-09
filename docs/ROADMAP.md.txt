@@ -1,0 +1,172 @@
+# External Brain - ROADMAP.md
+
+## Mission
+
+Create a trusted external brain that helps manage life and business by reducing cognitive load and surfacing what matters.
+
+---
+
+# Phase 0 - Foundation
+
+## Objective
+
+Define the operating model before building technology.
+
+## Deliverables
+
+* Vision established
+* Core categories defined
+* Success criteria defined
+* Project documentation created
+* Initial architecture direction established
+
+## Exit Criteria
+
+* Clear V1 definition exists
+* Information categories are stable
+* Project scope is understood
+
+---
+
+# Phase 1 - Capture & Organize
+
+## Objective
+
+Create a trusted system for collecting information and converting it into structured outputs.
+
+## Inputs
+
+* Brain dumps
+* Notes
+* Conversations
+* Emails (manual)
+* Calendar information
+* Work notes
+
+## Outputs
+
+* Tasks
+* Decisions
+* Waiting-on items
+* Calendar items
+* Reference notes
+* Weekly reviews
+
+## Success Criteria
+
+The user reliably captures information instead of trying to remember it.
+
+---
+
+# Phase 2 - Assisted Intake
+
+## Objective
+
+Reduce manual entry where practical.
+
+Potential sources:
+
+* Email
+* Calendar
+* Documents
+* Project systems
+* Messaging platforms
+
+## Success Criteria
+
+Information enters the system with minimal friction.
+
+---
+
+# Phase 3 - Domain Assistants
+
+## Objective
+
+Develop specialized support systems.
+
+Potential domains:
+
+* Procurement
+* Inventory
+* Business operations
+* Weekly planning
+* School events
+* Health tracking
+* Meal planning
+* Learning
+
+## Success Criteria
+
+Specialized workflows save meaningful time.
+
+---
+
+# Phase 4 - Recommendation Engine
+
+## Objective
+
+Use accumulated information to provide proactive recommendations.
+
+Examples:
+
+* Follow-up reminders
+* Priority suggestions
+* Scheduling recommendations
+* Procurement suggestions
+* Weekly planning recommendations
+
+## Success Criteria
+
+The system surfaces valuable insights without being asked.
+
+---
+
+# Phase 5 - Controlled Automation
+
+## Objective
+
+Automate selected low-risk tasks.
+
+Examples:
+
+* Draft creation
+* Calendar entry generation
+* Task creation
+* Report generation
+
+## Success Criteria
+
+Automation saves time while maintaining trust.
+
+---
+
+# Phase 6 - Unified Experience
+
+## Objective
+
+Provide a seamless user experience.
+
+Potential interfaces:
+
+* Mobile app
+* Desktop dashboard
+* Chat interface
+* Voice interface
+
+## Success Criteria
+
+The external brain feels like a cohesive system rather than a collection of tools.
+
+---
+
+# Parking Lot
+
+Ideas intentionally deferred until justified:
+
+* Agent swarms
+* Multi-agent orchestration
+* Complex memory systems
+* Advanced knowledge graphs
+* Autonomous decision-making
+* Large-scale infrastructure
+* Features without a demonstrated need

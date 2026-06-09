@@ -1,0 +1,195 @@
+# External Brain - SOUL.md
+
+# Purpose
+
+Build a trusted external brain that reduces cognitive load by capturing, organizing, prioritizing, and surfacing information so the user does not have to act as the database for their life and business.
+
+The goal is not automation.
+
+The goal is not intelligence for its own sake.
+
+The goal is not to build agents.
+
+The goal is to help the user remember less, manage less, and focus more on thinking, deciding, creating, and living.
+
+---
+
+# Core Principles
+
+## Cognitive Load First
+
+Every significant feature should reduce the amount of information the user must personally track, remember, or manage.
+
+If a feature does not meaningfully reduce cognitive load, it should be questioned.
+
+---
+
+## Utility Over Sophistication
+
+A simple system that works is more valuable than a complex system that impresses people.
+
+The project should optimize for usefulness, not novelty.
+
+---
+
+## Capture Before Automation
+
+Information must be reliably captured and organized before actions can be automated.
+
+A missed task is more harmful than a slow process.
+
+---
+
+## Recommendations Before Actions
+
+The system should learn to make good recommendations before it is trusted to take autonomous actions.
+
+Trust is earned through consistent usefulness.
+
+---
+
+## Problems Before Technology
+
+Technology choices should follow real problems.
+
+The project should not adopt tools, frameworks, models, or infrastructure simply because they are interesting or popular.
+
+---
+
+## Build for Evolution
+
+The system should be designed so that capabilities can grow over time without requiring complete rewrites.
+
+Long-term flexibility is valuable.
+
+Premature complexity is not.
+
+---
+
+## Human Judgment Remains Central
+
+The purpose of the system is to support decisions, not replace them.
+
+The final decision-maker is always the user.
+
+---
+
+Long-Term Vision
+
+The External Brain should gradually develop a unified understanding of the user's life, responsibilities, commitments, goals, and priorities.
+
+The system should be able to gather information from both direct user input and trusted external sources.
+
+Potential sources may include:
+
+Direct user input
+Email
+Calendars
+Health and fitness platforms
+Project and task systems
+Business systems
+Documents and notes
+Learning platforms
+Future sources not yet identified
+
+The user should not be required to manually maintain this understanding.
+
+Instead, the system should continuously help organize, connect, and surface information that already exists.
+
+The External Brain is intended to become the primary system responsible for maintaining context, priorities, memory, and decision support.
+
+Over time, specialized systems may be developed to support specific domains such as:
+
+Email
+Procurement
+Inventory
+Health and fitness
+Learning
+Scheduling
+Business operations
+
+These systems should not become independent sources of truth.
+
+Instead, they should contribute information, insights, and recommendations to the External Brain.
+
+The External Brain remains responsible for maintaining the broader understanding of the user's life, responsibilities, goals, commitments, and priorities.
+
+The long-term vision is a coordinated ecosystem rather than a collection of disconnected tools.
+
+The user should be able to interact naturally through whatever interface is most convenient, including:
+
+Chat
+Mobile applications
+Desktop dashboards
+Voice interfaces
+Future interfaces not yet identified
+
+Example:
+
+"Dan said we need to order speakers. Eli has choir Thursday. I need to call insurance. Remind me to check on the Lutron training."
+
+The system should understand context and organize information into meaningful categories such as:
+
+Tasks
+Decisions
+Waiting On
+Calendar Events
+Reference Information
+Priorities
+
+Over time, the system should become capable of proactively identifying what matters without requiring the user to remember every detail themselves.
+
+The goal is not to replace the user's judgment.
+
+The goal is to ensure the user is no longer the integration layer between every system in their life.
+
+---
+
+# What Success Looks Like
+
+The system is successful when:
+
+* Important things stop falling through the cracks.
+* Information can be captured once and reused many times.
+* The user trusts the system enough to offload information into it.
+* The user spends less mental energy remembering.
+* The system surfaces relevant information at the right time.
+* The system becomes more valuable over time.
+
+---
+
+# What We Refuse To Become
+
+* A collection of disconnected agents
+* A technology demonstration
+* An over-engineered productivity system
+* A workflow that requires constant maintenance
+* A system that creates more work than it removes
+* A project driven primarily by technology trends
+* A system that values autonomy over trust
+
+---
+
+# Governance
+
+This document is intentionally difficult to change.
+
+Changes to SOUL.md should be rare and should occur only when the fundamental purpose of the project changes.
+
+If a proposed feature conflicts with SOUL.md, the feature should be questioned before SOUL.md is changed.
+
+The purpose of SOUL.md is to prevent project drift and preserve the original mission of reducing cognitive load.
+
+---
+
+# Decision Filter
+
+Before introducing a major feature, workflow, technology, or architectural component, ask:
+
+1. Does this reduce cognitive load?
+2. Does this solve a real recurring problem?
+3. Is there a simpler solution?
+4. Can this wait until a later phase?
+5. Would this still be valuable if no one else ever saw the project?
+
+If these questions cannot be answered clearly, the idea should be deferred until its value is better understood.

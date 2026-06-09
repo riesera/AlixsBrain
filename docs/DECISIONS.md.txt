@@ -1,0 +1,67 @@
+# External Brain - DECISIONS.md
+
+## Decision Log
+
+---
+
+### 2026-06-09
+
+Decision:
+The project will focus on reducing cognitive load rather than maximizing automation.
+
+Reason:
+The primary problem is information overload and remembering responsibilities, not lack of automation.
+
+---
+
+### 2026-06-09
+
+Decision:
+The system will be designed as an external brain rather than a collection of agents.
+
+Reason:
+The long-term goal is decision support and memory augmentation rather than isolated task automation.
+
+---
+
+### 2026-06-09
+
+Decision:
+V1 will prioritize capture and organization.
+
+Reason:
+Reliable capture is required before recommendations or automation can be trusted.
+
+---
+
+### 2026-06-09
+
+Decision:
+Recommendations will be prioritized before autonomous actions.
+
+Reason:
+Trust must be established before automation becomes valuable.
+
+---
+
+### 2026-06-09
+
+Decision:
+Architecture decisions will be driven by problems rather than technology trends.
+
+Reason:
+The project should remain useful even if underlying technologies change.
+
+---
+
+## Template
+
+Date:
+
+Decision:
+
+Reason:
+
+Consequences:
+
+Follow-Up Required:

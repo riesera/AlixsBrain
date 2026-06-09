@@ -1,0 +1,52 @@
+## Current Phase
+
+Phase 0 - Foundation
+
+---
+
+## Current Objective
+
+Plan the first useful version of the External Brain and choose a baseline technical approach.
+
+The goal is not to design the entire final system.
+
+The goal is to define enough architecture, tools, data flow, and storage decisions to build V1 without creating avoidable incompatibilities later.
+
+---
+
+## Phase 0 Goals
+
+- Define the V1 problem clearly.
+- Define the core information categories.
+- Define the capture and review workflow.
+- Choose the baseline technology stack.
+- Identify what systems need to work together.
+- Avoid early decisions that would make future expansion difficult.
+- Keep infrastructure minimal and low-cost.
+
+---
+
+## Baseline Stack Planning Questions
+
+Before building V1, answer:
+
+1. Where does captured information live?
+2. How does new information enter the system?
+3. How is information categorized?
+4. Where are tasks, decisions, waiting-on items, and references stored?
+5. What interface will the user use first?
+6. What parts need to be easy to replace later?
+7. What integrations should be avoided until later?
+8. What technologies need to work together from the beginning?
+
+---
+
+## Current Priorities
+
+1. Design V1 workflow
+2. Define capture process
+3. Define review process
+4. Choose baseline storage approach
+5. Choose baseline interface approach
+6. Choose baseline processing approach
+7. Build first useful prototype

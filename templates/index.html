@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlixsBrain V1</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <h1>AlixsBrain V1</h1>
+      <p>Capture, categorize, and review the things you want to remember.</p>
+    </header>
+
+    <section class="capture-panel">
+      <h2>Capture</h2>
+      <form id="capture-form">
+        <label>
+          Category
+          <select id="kind" name="kind">
+            <option value="task">Task</option>
+            <option value="decision">Decision</option>
+            <option value="waiting_on">Waiting On</option>
+            <option value="reference">Reference</option>
+            <option value="event">Event</option>
+          </select>
+        </label>
+
+        <label>
+          Title
+          <input id="title" name="title" placeholder="Short title or summary" />
+        </label>
+
+        <label>
+          Details
+          <textarea id="raw_text" name="raw_text" rows="5" placeholder="Add notes, context, or the full capture here."></textarea>
+        </label>
+
+        <button type="submit">Save capture</button>
+      </form>
+    </section>
+
+    <section class="review-panel">
+      <h2>Review</h2>
+      <div id="status-message" class="status-message">Loading items...</div>
+      <div class="cards" id="item-boards">
+        <div class="board">
+          <h3>Tasks</h3>
+          <div id="tasks" class="board-items"></div>
+        </div>
+        <div class="board">
+          <h3>Decisions</h3>
+          <div id="decisions" class="board-items"></div>
+        </div>
+        <div class="board">
+          <h3>Waiting On</h3>
+          <div id="waiting_on" class="board-items"></div>
+        </div>
+        <div class="board">
+          <h3>References</h3>
+          <div id="reference" class="board-items"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
