@@ -54,6 +54,105 @@ The project should remain useful even if underlying technologies change.
 
 ---
 
+### 2026-06-09
+
+Decision:
+Use Telegram as the initial mobile capture interface.
+
+Reason:
+This provides the simplest always-on capture system while keeping costs low and avoiding the need for my laptop to remain online.
+
+Consequences:
+This makes Telegram a temporary V1 ingestion channel rather than a permanent architectural dependency. The data model should remain source-agnostic so future interfaces and integrations can use the same underlying system.
+
+Follow-Up Required:
+Define capture message formats and authentication for bot-based ingestion.
+
+---
+
+### 2026-06-09
+
+Decision:
+Use a Cloudflare Worker as the public webhook endpoint.
+
+Reason:
+A Cloudflare Worker provides a simple always-on public entry point without requiring dedicated infrastructure or a local machine to remain online.
+
+Consequences:
+The app can accept incoming Telegram webhooks reliably while keeping the infrastructure footprint low.
+
+Follow-Up Required:
+Configure the worker to validate Telegram requests and forward payloads into the processing pipeline.
+
+---
+
+### 2026-06-09
+
+Decision:
+Use Cloudflare D1 as the primary structured data store.
+
+Reason:
+D1 provides a lightweight SQL-compatible managed database that fits the low-cost, simple-stack V1 requirement.
+
+Consequences:
+Structured captures and review items can be stored centrally, enabling remote access and future interface expansion.
+
+Follow-Up Required:
+Design the D1 schema to support tasks, decisions, waiting-on items, references, and metadata.
+
+---
+
+### 2026-06-09
+
+Decision:
+The External Brain should eventually have one primary user-facing interface for direct interaction and review.
+
+Reason:
+The purpose of the project is to reduce cognitive load. Requiring me to communicate with the system through multiple apps or check multiple dashboards would recreate the fragmentation the system is meant to solve.
+
+Consequences:
+Telegram should be treated as a replaceable ingestion channel rather than a permanent architectural dependency. The data model should remain source-agnostic so future interfaces and integrations can use the same underlying system.
+
+Follow-Up Required:
+Define the future primary interface and plan how Telegram and other inputs feed into it.
+
+---
+
+### 2026-07-25
+
+Decision:
+Serve a temporary responsive review dashboard as static assets from the existing Cloudflare Worker, keep its API and Telegram webhook in the same Worker project, and use D1 as their shared source of truth. Protect the dashboard assets and API with HTTP Basic authentication backed by Worker secrets.
+
+Reason:
+Requiring Cloudflare console access and manual SQL queries recreates the cognitive burden the project exists to remove. Reusing the deployed Worker and D1 database provides an always-on phone and desktop interface without adding another service or requiring a local computer.
+
+Consequences:
+The Worker is responsible for Telegram ingestion, authenticated dashboard API routes, and protected static assets. Telegram captures can be reviewed and categorized from an Inbox, and structured items can be completed or reopened remotely. HTTP Basic authentication is accepted as a deliberately small single-user V1 control and should not be treated as the final identity architecture. The dashboard remains replaceable as the future primary interface becomes clearer.
+
+Follow-Up Required:
+Validate the dashboard and authentication on phone and desktop during the one-week field test. Reassess authentication before adding users, sensitive integrations, or broader access.
+
+---
+
+### 2026-07-25
+
+Decision:
+Adopt the V1.1 item model with one primary work category separated from optional domain, requester, project, flags, and due date/time metadata. Use the statuses Inbox, Open, Waiting, Done, and Archived. New Telegram and dashboard captures create an uncategorized Inbox item immediately, and categorization remains manual.
+
+Primary categories:
+Procurement; Admin & Finance; Communication & Follow-Up; Scheduling & Coordination; Project Work; Problems to Solve; Research / Figure Out; General Task.
+
+Reason:
+The original type list mixed work classification with state and did not support useful cross-cutting views such as open items requested by Dan. Separating these dimensions keeps capture fast while enabling later filtering without adding automated classification or forcing premature decisions.
+
+Consequences:
+Every saved capture has an item record and can be reviewed immediately. Inbox items may temporarily lack a primary category so classification never blocks capture; categorized active items require one primary category. Domain, requester, project, flags, due time, and status can change without altering the preserved raw capture. The dashboard supports Done/Reopen, Waiting, Archive, and explicitly confirmed permanent deletion. Telegram category commands from the prototype are no longer interpreted automatically.
+
+Follow-Up Required:
+Evaluate category clarity, metadata usefulness, Inbox accumulation, and deletion behavior during the field test. Add saved filtered views such as a Dan Queue only after real usage demonstrates their value.
+
+---
+
 ## Template
 
 Date:

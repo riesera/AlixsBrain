@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#172554"><title>AlixsBrain</title>
+  <link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+  <header class="topbar"><div><p class="eyebrow">External Brain</p><h1>AlixsBrain</h1></div><button id="refresh" class="secondary">Refresh</button></header>
+  <main>
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Quick entry</p><h2>Capture first. Sort later.</h2></div></div>
+      <form id="capture-form">
+        <label>Thought, task, or reminder<textarea id="raw_text" rows="3" required placeholder="What do you want your brain to hold?"></textarea></label>
+        <button type="submit">Save to Inbox</button>
+      </form>
+    </section>
+    <div id="status" class="status" role="status">Loading your brain…</div>
+    <section class="panel">
+      <div class="section-heading"><div><p class="eyebrow">Review</p><h2>Saved items <span id="visible-count" class="count">0</span></h2></div></div>
+      <div class="filters">
+        <label>Status<select id="filter-status"><option value="active">Inbox + Active</option><option value="Inbox">Inbox</option><option value="Open">Open</option><option value="Waiting">Waiting</option><option value="Done">Done</option><option value="Archived">Archived</option><option value="all">All</option></select></label>
+        <label>Category<select id="filter-category"><option value="all">All categories</option></select></label>
+        <label>Domain<select id="filter-domain"><option value="all">All domains</option></select></label>
+        <label>Requested by<select id="filter-requester"><option value="all">Everyone</option></select></label>
+      </div>
+      <div id="items" class="item-list"></div>
+      <p id="empty" class="empty" hidden>No items match these filters.</p>
+    </section>
+  </main>
+  <template id="item-template">
+    <article class="item-card">
+      <div class="item-summary"><div><h3></h3><div class="badges"></div><p class="raw-text"></p><p class="meta"></p></div></div>
+      <div class="quick-actions"><button class="done">Done</button><button class="archive secondary">Archive</button><button class="edit secondary">Edit</button><button class="delete danger">Delete</button></div>
+      <form class="editor" hidden>
+        <div class="form-grid">
+          <label>Title<input name="title" maxlength="120" required></label>
+          <label>Primary category<select name="primary_category"><option value="">Uncategorized</option></select></label>
+          <label>Domain<select name="domain"><option value="">None</option></select></label>
+          <label>Requested by<select name="requested_by"><option value="">None</option></select></label>
+          <label>Project<input name="project" placeholder="Optional project name"></label>
+          <label>Due date/time<input name="due_at" type="datetime-local"></label>
+          <label>Status<select name="status"></select></label>
+        </div>
+        <fieldset><legend>Flags</legend><div class="flag-options"></div></fieldset>
+        <div class="editor-actions"><button type="submit">Save changes</button><button class="cancel secondary" type="button">Cancel</button></div>
+      </form>
+    </article>
+  </template>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

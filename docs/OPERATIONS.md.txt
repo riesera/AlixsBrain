@@ -1,0 +1,85 @@
+# AlixsBrain V1 Operations
+
+## Production Components
+
+- Worker: `alixsbrain-capture`
+- URL: `https://alixsbrain-capture.alix-98e.workers.dev`
+- D1 database: `alixsbrain`
+- D1 binding: `DB`
+- Public route: `GET /health`
+- Telegram route: `POST /telegram/webhook`
+- Authenticated routes: dashboard assets and `/api/*`
+
+---
+
+## Routine Checks
+
+Public liveness:
+
+```powershell
+Invoke-RestMethod https://alixsbrain-capture.alix-98e.workers.dev/health
+```
+
+Authenticated database summary:
+
+```text
+GET /api/status
+```
+
+The status response contains counts and the most recent capture time, but never capture text.
+
+Cloudflare Worker logs are enabled. Structured events include:
+
+- `telegram_capture`
+- `telegram_confirmation_failed`
+- `dashboard_item_created`
+- `capture_categorized`
+- `item_status_changed`
+
+Custom logs intentionally exclude capture text, Telegram user/chat IDs, dashboard credentials, and bot tokens.
+
+---
+
+## Export a Private SQL Backup
+
+From the `worker` directory:
+
+```powershell
+npm.cmd run db:export
+```
+
+Exports are written under `worker/backups/` and ignored by Git. They contain capture text in plaintext SQL and must be kept private.
+
+Cloudflare D1 Time Travel is also enabled automatically. It supports point-in-time recovery for the retention period associated with the Cloudflare plan.
+
+---
+
+## Recovery
+
+### Accidental data change within Time Travel retention
+
+1. Stop and record the approximate UTC time before the unwanted change.
+2. Export the current database before restoring anything.
+3. Retrieve a D1 bookmark for the intended recovery timestamp.
+4. Review the timestamp and bookmark carefully.
+5. Run a Time Travel restore only after explicit confirmation.
+
+Time Travel restore overwrites the database in place and is destructive. Never test it against production merely to prove it works.
+
+### Restore from a SQL export
+
+Do not import directly into production first. Create a separate D1 database, import the SQL export there, verify tables and counts, and only then decide how to recover production. This avoids overwriting a recoverable production database with an unverified file.
+
+---
+
+## Secret Handling
+
+Production secrets are stored as Cloudflare Worker secrets:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_WEBHOOK_SECRET`
+- `ALLOWED_TELEGRAM_USER_ID`
+- `DASHBOARD_USERNAME`
+- `DASHBOARD_PASSWORD`
+
+Secret values must not be committed, pasted into issue reports, or included in screenshots. Re-run the relevant configuration helper to rotate them.

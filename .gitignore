@@ -8,3 +8,8 @@ brain.db
 .DS_Store
 .idea/
 .vscode/
+.wrangler/
+node_modules/
+.dev.vars
+coverage/
+worker/backups/

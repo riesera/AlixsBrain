@@ -1,31 +1,31 @@
-# AlixsBrain V1 Prototype
+# AlixsBrain
 
-A minimal External Brain prototype for capture, organization, and review.
+AlixsBrain is a small external-brain system for reliable capture, manual organization, and review. Its purpose is to reduce how much information the user must personally remember.
 
-## What this contains
+## Deployed V1.1 architecture
 
-- `app.py` — Flask backend with SQLite storage
-- `brain.db` — created automatically on first run
-- `templates/index.html` — lightweight browser interface
-- `static/app.js` — interface behavior and API integration
-- `static/style.css` — minimal styling
+```text
+Telegram → Cloudflare Worker → Cloudflare D1
+                         ↕
+              Authenticated dashboard
+```
 
-## Run locally
+- Telegram provides fast mobile capture and a `Saved.` confirmation.
+- One Cloudflare Worker handles the Telegram webhook, authenticated APIs, and responsive static dashboard.
+- Cloudflare D1 is the shared source of truth.
+- New captures enter Inbox immediately and are categorized manually afterward.
+- The dashboard works on phone and desktop without a local computer remaining online.
 
-1. Create a Python environment
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Start the app:
-   ```bash
-   python app.py
-   ```
-4. Open `http://localhost:5000`
+The Worker project and deployment instructions are under `worker/`.
 
-## V1 goals
+## V1.1 item model
 
-- Capture raw entries
-- Store items with categories: task, decision, waiting_on, reference, event
-- Review and update item status
-- Keep the first implementation minimal and easy to evolve
+Items separate a primary work category from optional domain, requester, project, multiple flags, due date/time, and lifecycle status. Status is Inbox, Open, Waiting, Done, or Archived. Raw capture text is preserved independently of later classification.
+
+## Legacy local prototype
+
+`app.py`, `templates/`, and `static/` contain the original Flask/SQLite proof of concept. They remain for historical reference but are not the active deployed application and do not read production D1 data.
+
+## Project documentation
+
+Start with `docs/README.md.txt`. Purpose, decisions, roadmap, current state, field testing, and recovery instructions are maintained under `docs/`.

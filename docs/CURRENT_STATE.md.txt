@@ -6,47 +6,62 @@ Phase 0 - Foundation
 
 ## Current Objective
 
-Plan the first useful version of the External Brain and choose a baseline technical approach.
+Validate the deployed V1 capture and review system through a one-week phone-based field test.
 
-The goal is not to design the entire final system.
+Phase 0 now includes validating the reliability and usefulness of the implemented capture interface, public webhook endpoint, remote review interface, and structured remote storage.
 
-The goal is to define enough architecture, tools, data flow, and storage decisions to build V1 without creating avoidable incompatibilities later.
-
----
-
-## Phase 0 Goals
-
-- Define the V1 problem clearly.
-- Define the core information categories.
-- Define the capture and review workflow.
-- Choose the baseline technology stack.
-- Identify what systems need to work together.
-- Avoid early decisions that would make future expansion difficult.
-- Keep infrastructure minimal and low-cost.
+This file is a factual snapshot of what exists today (implementation and repository state), not a place to make new strategic decisions.
 
 ---
 
-## Baseline Stack Planning Questions
+## Recent Progress (2026-07-25)
 
-Before building V1, answer:
+- Deployed the Telegram webhook to the `alixsbrain-capture` Cloudflare Worker.
+- Created the `alixsbrain` Cloudflare D1 database and applied the initial schema migration.
+- Validated real Telegram captures from a phone, including D1 persistence and a `Saved.` confirmation reply.
+- Added source-update idempotency so Telegram retries do not create duplicate captures or items.
+- Deployed a responsive phone and desktop dashboard as static assets from the same Worker.
+- Added source-agnostic D1 APIs for Inbox review, manual capture, categorization, and item completion/reopening.
+- Protected dashboard HTML, CSS, JavaScript, and API routes with HTTP Basic authentication backed by Worker secrets.
+- Verified production access controls: only `/health` is public; dashboard and API surfaces reject unauthenticated requests.
+- Added 11 passing integration tests covering Telegram ingestion, authentication, D1 review workflows, and retry behavior.
+- Completed Checkpoint 3 operational setup: privacy-safe structured Worker logs, authenticated database status, D1 export tooling, recovery instructions, and a seven-day field-test runbook.
+- Created and verified the first private production SQL export; confirmed D1 Time Travel is available without performing a destructive restore.
+- Expanded the integration suite to 12 passing tests.
+- Deployed the V1.1 categorization model with separate primary category, domain, requester, project, flags, due date/time, and lifecycle status fields.
+- Migrated all four existing captures into uncategorized Inbox items without changing their raw text.
+- Added dashboard filters plus Done/Reopen, Waiting, Archive/Restore, metadata editing, and confirmed permanent deletion.
 
-1. Where does captured information live?
-2. How does new information enter the system?
-3. How is information categorized?
-4. Where are tasks, decisions, waiting-on items, and references stored?
-5. What interface will the user use first?
-6. What parts need to be easy to replace later?
-7. What integrations should be avoided until later?
-8. What technologies need to work together from the beginning?
+---
+
+## Current State Details
+
+- Storage: Cloudflare D1 (`alixsbrain`) is the active shared source of truth. The local SQLite prototype contains no meaningful production data and is no longer the active system.
+- Capture interface: Telegram bot connected to `POST /telegram/webhook`; accepted messages are stored in D1 and receive a `Saved.` confirmation.
+- Review interface: Responsive authenticated dashboard deployed at `https://alixsbrain-capture.alix-98e.workers.dev`; works without a local computer being online.
+- Dashboard workflow: Shows every capture as an item, supports manual categorization and metadata editing, filters by status/category/domain/requester, and provides Done/Reopen, Waiting, Archive/Restore, and confirmed permanent deletion.
+- Item model: One primary category separated from optional domain, requested-by, project, multiple flags, and due date/time. Status is Inbox, Open, Waiting, Done, or Archived.
+- Processing: Intentionally minimal. Telegram and dashboard messages are immediately stored as uncategorized Inbox items. Categorization remains manual, and raw capture text is preserved independently from item metadata.
+- Security: Telegram webhook secret plus Telegram user allowlist for ingestion; separate HTTP Basic credentials stored as Worker secrets for all dashboard assets and APIs.
+- CI/CD: None configured; deployments and migrations are currently run manually with Wrangler.
+- Observability: Cloudflare Worker invocation and structured event logs are enabled at full sampling for the low-volume field test. Custom events exclude capture text, Telegram identity, credentials, and tokens.
+- Recovery: D1 Time Travel is available, and `npm run db:export` creates a private Git-ignored SQL export. Recovery procedures are documented in `docs/OPERATIONS.md.txt`.
+- Validation: The seven-day procedure, exception log, and success criteria are documented in `docs/FIELD_TEST.md.txt`.
+- Current implementation: Deployed V1 test system using Telegram → Cloudflare Worker → Cloudflare D1, with the Worker also serving the protected review dashboard and API.
+
+---
+
+## Next Actions
+
+1. Run the seven-day phone field test in `docs/FIELD_TEST.md.txt`.
+2. Record missed captures, duplicates, confusing categorization, authentication friction, and other reliability issues observed during the field test.
+3. Review field-test evidence before expanding processing or automation.
 
 ---
 
 ## Current Priorities
 
-1. Design V1 workflow
-2. Define capture process
-3. Define review process
-4. Choose baseline storage approach
-5. Choose baseline interface approach
-6. Choose baseline processing approach
-7. Build first useful prototype
+- Confirm the remote dashboard is easy to use on phone and desktop.
+- Test the system from a phone for one week to confirm capture and review reliability.
+- Preserve raw captures and maintain a source-agnostic data model for future interfaces.
+- Prefer observations from real use before adding classification, recommendations, or automation.

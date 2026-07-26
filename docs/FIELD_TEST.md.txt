@@ -1,0 +1,83 @@
+# AlixsBrain V1 Field Test
+
+## Test Window
+
+Run for seven consecutive days using the Telegram bot and remote dashboard as the normal capture and review workflow.
+
+The purpose is to determine whether the system reliably reduces remembering and capture friction. It is not a feature-discovery exercise.
+
+---
+
+## Daily Routine
+
+### During the day
+
+- Capture real thoughts, tasks, decisions, events, waiting-on items, and references in Telegram.
+- Confirm that each intended capture receives one `Saved.` reply.
+- Do not change normal behavior merely to make the system look successful.
+- If a capture is urgent, continue using any existing safety-critical reminder process during this test.
+
+### Once daily
+
+- Open the AlixsBrain home-screen shortcut.
+- Confirm recent Telegram messages appear in Inbox.
+- Categorize Inbox captures that have a clear type.
+- Complete or reopen structured items as appropriate.
+- Note any login friction, confusing actions, missing information, or slow responses.
+
+### End of day
+
+Record only exceptions:
+
+- A message did not receive `Saved.`.
+- A saved message did not appear in Inbox.
+- A duplicate capture appeared.
+- Categorization created the wrong or duplicate item.
+- Dashboard login or loading failed.
+- Phone layout made an action difficult.
+- The workflow caused more work than remembering manually.
+
+If there were no exceptions, record `No issues` for that day.
+
+---
+
+## Field-Test Log
+
+| Day | Date | Captures used naturally? | Daily review completed? | Exceptions or friction |
+|---|---|---|---|---|
+| 1 | | | | |
+| 2 | | | | |
+| 3 | | | | |
+| 4 | | | | |
+| 5 | | | | |
+| 6 | | | | |
+| 7 | | | | |
+
+---
+
+## Success Criteria
+
+The field test succeeds when:
+
+- Every message that receives `Saved.` is present exactly once in D1.
+- No intended capture silently disappears.
+- Dashboard review works from a phone without a local computer.
+- Inbox categorization does not create duplicate structured items.
+- The user naturally chooses Telegram instead of trying to remember things.
+- The combined capture and review workflow reduces cognitive load overall.
+
+The test is not invalidated by usability complaints. Friction is evidence that should guide the next iteration.
+
+---
+
+## End-of-Test Review
+
+After day seven, answer:
+
+1. What, if anything, fell through the cracks?
+2. Was `Saved.` sufficient confirmation?
+3. Did Inbox accumulate faster than it was reviewed?
+4. Were the five categories understandable in real use?
+5. Was authentication tolerable on phone and desktop?
+6. Which single change would reduce the most cognitive load?
+7. Is the system reliable enough to enter Phase 1 use, or does Foundation validation need another iteration?
