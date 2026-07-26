@@ -1,4 +1,5 @@
 import type { Domain, Env, ItemFlag, ItemStatus, PrimaryCategory, RequestedBy } from "./types";
+import { ALL_TASK_STATUSES, readCanonicalTasks } from "./task-reader";
 
 const CATEGORIES = new Set<PrimaryCategory>([
   "Procurement", "Admin & Finance", "Communication & Follow-Up", "Scheduling & Coordination",
@@ -31,18 +32,9 @@ function validFlags(value: unknown): ItemFlag[] | null {
 }
 
 async function listItems(env: Env, inboxOnly = false): Promise<Response> {
-  const { results } = await env.DB.prepare(`
-    SELECT i.id, i.capture_id, i.title, i.primary_category, i.domain, i.requested_by,
-           i.project, i.status, i.due_at, i.created_at, i.updated_at,
-           r.raw_text, r.source,
-           COALESCE((SELECT json_group_array(flag) FROM item_flag WHERE item_id = i.id), '[]') AS flags_json
-    FROM item i
-    JOIN raw_capture r ON r.id = i.capture_id
-    ${inboxOnly ? "WHERE i.status = 'Inbox'" : ""}
-    ORDER BY i.created_at DESC
-    LIMIT 500
-  `).all<Record<string, unknown> & { flags_json: string }>();
-  return json(results.map(({ flags_json, ...item }) => ({ ...item, flags: JSON.parse(flags_json) })));
+  return json(await readCanonicalTasks(env.DB, {
+    statuses: inboxOnly ? ["Inbox"] : ALL_TASK_STATUSES
+  }));
 }
 
 async function replaceFlags(env: Env, itemId: string, flags: ItemFlag[]): Promise<void> {

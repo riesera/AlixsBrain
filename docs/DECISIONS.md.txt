@@ -153,6 +153,54 @@ Evaluate category clarity, metadata usefulness, Inbox accumulation, and deletion
 
 ---
 
+### 2026-07-26
+
+Decision:
+Health Connect data will be read through a small read-only Android companion app and synchronized into shared External Brain health infrastructure. The Cloudflare Worker and Sunday Review Agent will not attempt to access the device-local Health Connect store directly. The initial integration will cover steps, sleep, exercise sessions, food and nutrition (including available micronutrients), hydration, weight, and resting heart rate when reliably supplied by connected sources. Medical records, exercise routes/GPS, and other data without a clear planning purpose are excluded initially.
+
+Health data will use tiered retention and deterministic compaction:
+
+- retain individual food, water, sleep, and other useful event-level detail for 90 days;
+- retain daily summaries for approximately two years;
+- retain weekly summaries for approximately five years;
+- retain compact monthly summaries indefinitely;
+- retain low-volume measurements such as one daily weight value longer when storage cost is negligible;
+- preserve counts, coverage, missing days, sums, averages, ranges, and variability so summaries can be merged and updated without keeping every source record;
+- compact or delete detailed records only after the replacement summary is successfully written and verified.
+
+Micronutrients will be stored sparsely in daily summaries: only nutrients actually supplied by Health Connect are recorded, and missing values remain missing rather than becoming zero. Individual food descriptions do not need indefinite retention.
+
+Only current nutrition and hydration targets will be stored. Targets are edited in place; historical target versions and historical target-attainment claims will not be maintained. Historical observations may be compared with the current target only when the output explicitly labels that comparison as using the current target.
+
+Reason:
+Health Connect is device-local and permission-controlled, so an Android client is required. Weekly planning benefits from recent detail and long-term trends, but retaining years of high-frequency raw records would add privacy, storage, and maintenance cost without proportional value. Tiered summaries preserve useful trends and data-quality context while minimizing retained sensitive data.
+
+Consequences:
+Shared health data belongs to the External Brain rather than to the Sunday Review Agent. The Android app must request granular read permissions, historical-read permission for the one-time backfill, and optional background-read permission for incremental synchronization. Historical backfill must be resumable and chunked. Incremental sync must handle updates and deletions idempotently. Sunday Review may consume a dated health summary and ask for subjective energy, stress, pain, illness, recovery, and capacity that Health Connect cannot establish.
+
+Follow-Up Required:
+Build an Android proof of concept that reads a selected seven-day range locally before introducing cloud ingestion. Confirm which micronutrients the phone's current source applications actually populate. Define shared health tables, phone pairing and revocation, sync authentication, correction windows, compaction scheduling, and deletion/rebuild behavior before production health data is uploaded.
+
+---
+
+### 2026-07-26 — Initial Health Sync Contract
+
+Decision:
+The first durable Health Connect sync stores one canonical summary per device, local calendar date, and timezone in shared D1 infrastructure. Uploads use idempotent replacement so a repeated backfill corrects the same day instead of duplicating it. Missing measurements remain null, micronutrients remain sparse, exercise types are stored under friendly canonical names, and source-package coverage is retained.
+
+The Android companion authenticates with a dedicated revocable bearer token stored as a Worker secret and embedded only in a locally built APK. It does not reuse dashboard or Telegram credentials. Rotating or removing the Worker secret revokes the device. The initial manual backfill covers the 30-day window Health Connect makes available on the current phone and uploads only when explicitly requested.
+
+Reason:
+A daily contract is the smallest useful durable input for Sunday Review and establishes correction, provenance, and missing-data behavior before background sync or destructive compaction exists.
+
+Consequences:
+Daily summaries can be safely re-read and replaced as source applications correct recent records. This first table is not the event-detail tier and does not yet implement scheduled incremental sync, 90-day event deletion, weekly/monthly rollups, current targets, or Sunday Review packet consumption. Production device access is single-token initially; a multi-device pairing registry is deferred until a second device or self-service revocation requires it.
+
+Follow-Up Required:
+Validate the first 30-day backfill and source coverage, then add read-only weekly summary consumption for Sunday Review. Add scheduled incremental synchronization and deterministic weekly/monthly compaction before claiming the full retention design is operational.
+
+---
+
 ## Template
 
 Date:

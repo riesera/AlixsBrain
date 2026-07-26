@@ -8,26 +8,80 @@
 <body>
   <header class="topbar"><div><p class="eyebrow">External Brain</p><h1>AlixsBrain</h1></div><button id="refresh" class="secondary">Refresh</button></header>
   <main>
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">Quick entry</p><h2>Capture first. Sort later.</h2></div></div>
-      <form id="capture-form">
-        <label>Thought, task, or reminder<textarea id="raw_text" rows="3" required placeholder="What do you want your brain to hold?"></textarea></label>
-        <button type="submit">Save to Inbox</button>
-      </form>
-    </section>
+    <nav class="tabs" aria-label="AlixsBrain sections">
+      <button class="tab active" type="button" data-view="tasks" aria-selected="true">Tasks</button>
+      <button class="tab" type="button" data-view="review" aria-selected="false">Sunday Review</button>
+    </nav>
     <div id="status" class="status" role="status">Loading your brain…</div>
-    <section class="panel">
-      <div class="section-heading"><div><p class="eyebrow">Review</p><h2>Saved items <span id="visible-count" class="count">0</span></h2></div></div>
-      <div class="filters">
-        <label>Status<select id="filter-status"><option value="active">Inbox + Active</option><option value="Inbox">Inbox</option><option value="Open">Open</option><option value="Waiting">Waiting</option><option value="Done">Done</option><option value="Archived">Archived</option><option value="all">All</option></select></label>
-        <label>Category<select id="filter-category"><option value="all">All categories</option></select></label>
-        <label>Domain<select id="filter-domain"><option value="all">All domains</option></select></label>
-        <label>Requested by<select id="filter-requester"><option value="all">Everyone</option></select></label>
-      </div>
-      <div id="items" class="item-list"></div>
-      <p id="empty" class="empty" hidden>No items match these filters.</p>
-    </section>
+
+    <div id="tasks-view" class="view">
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">Quick entry</p><h2>Capture first. Sort later.</h2></div></div>
+        <form id="capture-form">
+          <label>Thought, task, or reminder<textarea id="raw_text" rows="3" required placeholder="What do you want your brain to hold?"></textarea></label>
+          <button type="submit">Save to Inbox</button>
+        </form>
+      </section>
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">Review</p><h2>Saved items <span id="visible-count" class="count">0</span></h2></div></div>
+        <div class="filters">
+          <label>Status<select id="filter-status"><option value="active">Inbox + Active</option><option value="Inbox">Inbox</option><option value="Open">Open</option><option value="Waiting">Waiting</option><option value="Done">Done</option><option value="Archived">Archived</option><option value="all">All</option></select></label>
+          <label>Category<select id="filter-category"><option value="all">All categories</option></select></label>
+          <label>Domain<select id="filter-domain"><option value="all">All domains</option></select></label>
+          <label>Requested by<select id="filter-requester"><option value="all">Everyone</option></select></label>
+        </div>
+        <div id="items" class="item-list"></div>
+        <p id="empty" class="empty" hidden>No items match these filters.</p>
+      </section>
+    </div>
+
+    <div id="review-view" class="view" hidden>
+      <section id="review-start" class="panel">
+        <div class="section-heading"><div><p class="eyebrow">Weekly reset</p><h2>Start or resume a Sunday Review</h2></div></div>
+        <p class="intro">Choose the exact week you want to prepare. The review saves after every answer and can be resumed later.</p>
+        <form id="review-start-form">
+          <div class="form-grid three">
+            <label>Week starts<input id="review-week-start" name="week_start" type="date" required></label>
+            <label>Week ends<input id="review-week-end" name="week_end" type="date" required></label>
+            <label>Timezone<input id="review-timezone" name="timezone" required placeholder="America/Chicago"></label>
+          </div>
+          <div class="review-actions"><button type="submit">Start or resume</button><button id="resume-saved" class="secondary" type="button" hidden>Resume saved review</button></div>
+        </form>
+      </section>
+
+      <section id="review-session" class="panel" hidden>
+        <div class="review-session-heading">
+          <div><p class="eyebrow">Sunday Review</p><h2 id="review-week-label">Weekly review</h2><p id="review-session-meta" class="meta"></p></div>
+          <div class="review-menu"><button id="review-restart" class="secondary" type="button">Restart</button><button id="review-abandon" class="danger" type="button">Abandon</button><button id="review-archive" class="secondary" type="button">Archive</button></div>
+        </div>
+        <ol id="review-progress" class="review-progress" aria-label="Review progress"></ol>
+        <div id="review-ready" class="ready-card" hidden>
+          <p class="eyebrow">Collection complete</p><h3>Ready for the planning packet</h3>
+          <p>Your answers and task references are saved. Packet generation is the next milestone and is not active yet.</p>
+        </div>
+        <div id="review-question-card" class="question-card">
+          <p id="review-step-count" class="eyebrow"></p>
+          <h3 id="review-step-title"></h3>
+          <p id="review-step-purpose" class="intro"></p>
+          <div id="review-task-context" class="review-task-context" hidden></div>
+          <form id="review-answer-form">
+            <label id="review-question-label" for="review-answer"></label>
+            <p id="review-question-help" class="question-help"></p>
+            <textarea id="review-answer" rows="7" placeholder="Type or paste anything useful here..."></textarea>
+            <div class="answer-choices" aria-label="Alternative responses">
+              <button type="button" class="choice secondary" data-kind="none">None</button>
+              <button type="button" class="choice secondary" data-kind="unknown">Unknown</button>
+              <button type="button" class="choice secondary" data-kind="not_applicable">Not applicable</button>
+              <button type="button" class="choice secondary" data-kind="deferred">Defer</button>
+            </div>
+            <div class="review-actions"><button type="submit">Save and continue</button><button id="review-skip-section" class="secondary" type="button">Skip section</button></div>
+          </form>
+          <div class="review-navigation"><button id="review-previous" class="secondary" type="button">Previous section</button><span id="review-save-state" class="save-state"></span><button id="review-next" class="secondary" type="button">Next section</button></div>
+        </div>
+      </section>
+    </div>
   </main>
+
   <template id="item-template">
     <article class="item-card">
       <div class="item-summary"><div><h3></h3><div class="badges"></div><p class="raw-text"></p><p class="meta"></p></div></div>

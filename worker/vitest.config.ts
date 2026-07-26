@@ -12,7 +12,8 @@ export default defineConfig({
         ALLOWED_TELEGRAM_USER_ID: "123456789",
         TELEGRAM_BOT_TOKEN: "test-bot-token",
         DASHBOARD_USERNAME: "test-user",
-        DASHBOARD_PASSWORD: "test-password"
+        DASHBOARD_PASSWORD: "test-password",
+        HEALTH_SYNC_TOKEN: "test-health-token"
       }
     }
   }))]

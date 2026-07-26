@@ -2,6 +2,8 @@ import { storeTelegramUpdate } from "./captures";
 import { confirmStored, isTelegramUpdate, secretsMatch } from "./telegram";
 import { authenticationRequired, isDashboardAuthorized } from "./auth";
 import { dashboardApi } from "./dashboard";
+import { reviewApi } from "./review-api";
+import { healthSyncApi } from "./health-sync";
 import type { Env } from "./types";
 
 const json = (body: unknown, status = 200): Response =>
@@ -11,9 +13,15 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (request.method === "GET" && url.pathname === "/health") return json({ ok: true });
+    if (url.pathname === "/api/health/daily") {
+      return (await healthSyncApi(request, env, url))!;
+    }
     if (url.pathname !== "/telegram/webhook") {
       if (!isDashboardAuthorized(request, env)) return authenticationRequired();
-      if (url.pathname.startsWith("/api/")) return dashboardApi(request, env, url.pathname);
+      if (url.pathname.startsWith("/api/")) {
+        const reviewResponse = await reviewApi(request, env, url);
+        return reviewResponse ?? dashboardApi(request, env, url.pathname);
+      }
       return env.ASSETS.fetch(request);
     }
     if (request.method !== "POST") return json({ error: "method_not_allowed" }, 405);

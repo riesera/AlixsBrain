@@ -6,6 +6,7 @@ export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   DASHBOARD_USERNAME: string;
   DASHBOARD_PASSWORD: string;
+  HEALTH_SYNC_TOKEN?: string;
 }
 
 export interface TelegramUpdate { update_id: number; message?: TelegramMessage; }

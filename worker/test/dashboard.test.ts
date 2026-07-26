@@ -15,6 +15,15 @@ beforeEach(() => { vi.restoreAllMocks(); });
 beforeAll(async () => { await applyD1Migrations(env.DB, env.TEST_MIGRATIONS); });
 
 describe("dashboard authentication and API", () => {
+  it("serves Tasks and Sunday Review tabs from the authenticated dashboard", async () => {
+    const response = await request("/");
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('data-view="tasks"');
+    expect(html).toContain('data-view="review"');
+    expect(html).toContain("Sunday Review");
+  });
+
   it("reports authenticated database status without capture content", async () => {
     const response = await request("/api/status");
     expect(response.status).toBe(200);
