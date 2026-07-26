@@ -4,6 +4,7 @@ import { authenticationRequired, isDashboardAuthorized } from "./auth";
 import { dashboardApi } from "./dashboard";
 import { reviewApi } from "./review-api";
 import { healthSyncApi } from "./health-sync";
+import { healthReadApi } from "./health-api";
 import type { Env } from "./types";
 
 const json = (body: unknown, status = 200): Response =>
@@ -19,6 +20,8 @@ export default {
     if (url.pathname !== "/telegram/webhook") {
       if (!isDashboardAuthorized(request, env)) return authenticationRequired();
       if (url.pathname.startsWith("/api/")) {
+        const healthResponse = await healthReadApi(request, env, url);
+        if (healthResponse) return healthResponse;
         const reviewResponse = await reviewApi(request, env, url);
         return reviewResponse ?? dashboardApi(request, env, url.pathname);
       }

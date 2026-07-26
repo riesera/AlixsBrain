@@ -38,5 +38,7 @@ describe("health daily sync", () => {
     const response = await sync({ ...payload, steps: -1 });
     expect(response.status).toBe(400);
     expect(await env.DB.prepare("SELECT COUNT(*) AS count FROM health_daily_summary WHERE steps = -1").first("count")).toBe(0);
+    expect((await sync({ ...payload, nutrients: { Protein: "unknown" } })).status).toBe(400);
+    expect((await sync({ ...payload, exercise: { Walking: { sessions: 1, minutes: -4 } } })).status).toBe(400);
   });
 });

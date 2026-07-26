@@ -23,10 +23,38 @@ const string = (value: unknown, field: string, max = 100): string => {
   return value;
 };
 
+const validDate = (value: string): boolean => {
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(parsed.valueOf()) && parsed.toISOString().slice(0, 10) === value;
+};
+
 const objectOrNull = (value: unknown, field: string): JsonObject | null => {
   if (value === null) return null;
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(field);
   return value as JsonObject;
+};
+
+const nutrientsObject = (value: unknown): JsonObject | null => {
+  const object = objectOrNull(value, "nutrients");
+  if (object === null) return null;
+  const entries = Object.entries(object);
+  if (entries.length > 100 || entries.some(([name, amount]) =>
+    name.length === 0 || name.length > 100 || typeof amount !== "number" || !Number.isFinite(amount) || amount < 0
+  )) throw new Error("nutrients");
+  return object;
+};
+
+const exerciseObject = (value: unknown): JsonObject | null => {
+  const object = objectOrNull(value, "exercise");
+  if (object === null) return null;
+  const entries = Object.entries(object);
+  if (entries.length > 100 || entries.some(([name, detail]) => {
+    if (name.length === 0 || name.length > 100 || !detail || typeof detail !== "object" || Array.isArray(detail)) return true;
+    const record = detail as JsonObject;
+    return !Number.isInteger(record.sessions) || (record.sessions as number) < 0 ||
+      !Number.isInteger(record.minutes) || (record.minutes as number) < 0;
+  })) throw new Error("exercise");
+  return object;
 };
 
 export function isHealthSyncAuthorized(request: Request, env: Env): boolean {
@@ -47,14 +75,18 @@ export async function healthSyncApi(request: Request, env: Env, url: URL): Promi
     const body = value as JsonObject;
     const deviceId = string(body.device_id, "device_id", 80);
     const localDate = string(body.local_date, "local_date", 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(localDate) || Number.isNaN(Date.parse(`${localDate}T00:00:00Z`))) throw new Error("local_date");
+    if (!validDate(localDate)) throw new Error("local_date");
     const timezone = string(body.timezone, "timezone", 80);
+    try { new Intl.DateTimeFormat("en-US", { timeZone: timezone }).format(); }
+    catch { throw new Error("timezone"); }
     const collectedAt = string(body.collected_at, "collected_at", 40);
     if (Number.isNaN(Date.parse(collectedAt))) throw new Error("collected_at");
-    const exercise = objectOrNull(body.exercise, "exercise");
-    const nutrients = objectOrNull(body.nutrients, "nutrients");
+    const exercise = exerciseObject(body.exercise);
+    const nutrients = nutrientsObject(body.nutrients);
     const sources = body.source_packages;
-    if (!Array.isArray(sources) || sources.some(source => typeof source !== "string")) throw new Error("source_packages");
+    if (!Array.isArray(sources) || sources.length > 50 || sources.some(source =>
+      typeof source !== "string" || source.length === 0 || source.length > 200
+    )) throw new Error("source_packages");
     const receivedAt = new Date().toISOString();
 
     await env.DB.prepare(`

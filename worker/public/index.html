@@ -11,6 +11,7 @@
     <nav class="tabs" aria-label="AlixsBrain sections">
       <button class="tab active" type="button" data-view="tasks" aria-selected="true">Tasks</button>
       <button class="tab" type="button" data-view="review" aria-selected="false">Sunday Review</button>
+      <button class="tab" type="button" data-view="health" aria-selected="false">Health</button>
     </nav>
     <div id="status" class="status" role="status">Loading your brain…</div>
 
@@ -78,6 +79,39 @@
           </form>
           <div class="review-navigation"><button id="review-previous" class="secondary" type="button">Previous section</button><span id="review-save-state" class="save-state"></span><button id="review-next" class="secondary" type="button">Next section</button></div>
         </div>
+      </section>
+    </div>
+
+    <div id="health-view" class="view" hidden>
+      <section class="panel">
+        <div class="section-heading"><div><p class="eyebrow">Health Connect</p><h2>Validate a stored week</h2></div></div>
+        <p class="intro">This read-only view derives one seven-day summary from canonical daily records. Missing data remains missing.</p>
+        <form id="health-week-form">
+          <div class="form-grid three">
+            <label>Week starts<input id="health-week-start" name="week_start" type="date" required></label>
+            <label>Timezone<input id="health-timezone" name="timezone" required placeholder="America/Chicago"></label>
+            <div class="form-button"><button type="submit">Load stored week</button></div>
+          </div>
+        </form>
+      </section>
+
+      <section id="health-results" class="panel" hidden>
+        <div class="section-heading"><div><p class="eyebrow">Weekly evidence</p><h2 id="health-week-label"></h2><p id="health-coverage" class="meta"></p></div></div>
+        <ul id="health-warnings" class="warning-list" hidden></ul>
+        <div id="health-metrics" class="metric-grid"></div>
+
+        <div class="health-detail-grid">
+          <section><h3>Exercise</h3><div id="health-exercises" class="compact-list"></div></section>
+          <section><h3>Nutrition coverage</h3><div id="health-nutrients" class="compact-list"></div></section>
+          <section><h3>Sources</h3><div id="health-sources" class="compact-list"></div></section>
+        </div>
+
+        <h3>Daily validation</h3>
+        <div class="table-wrap"><table class="health-table">
+          <thead><tr><th>Date</th><th>Steps</th><th>Sleep</th><th>Food</th><th>Burned</th><th>Water</th><th>Weight</th></tr></thead>
+          <tbody id="health-days"></tbody>
+        </table></div>
+        <p class="question-help">Energy balance is shown only when both food and burned-energy coverage are complete for all seven days.</p>
       </section>
     </div>
   </main>

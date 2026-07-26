@@ -18,14 +18,14 @@ This is a shared External Brain integration. It supplies trustworthy health cont
 - Make retries idempotent so corrected days replace rather than duplicate data.
 - Manually backfill the 30 days currently available to the app.
 
-## Next — Weekly read and validation
+## Completed — Weekly read and validation
 
 - Add a read-only Worker API that derives a requested local week from canonical daily summaries.
 - Return totals, averages, ranges, logged-day coverage, exercise summaries, and missing-data notices.
 - Explicitly distinguish food consumed, energy burned, and incomplete energy-balance evidence.
 - Add a small authenticated dashboard view for validating the derived week before it is used automatically.
 
-## Then — Sunday Review integration
+## Next — Sunday Review integration
 
 - Prefill the Health and Capacity review step from the weekly health API.
 - Preserve retrieval time, covered dates, source coverage, and missing-data notices.

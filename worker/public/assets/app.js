@@ -75,8 +75,71 @@ function switchView(view){
   currentView=view;
   document.getElementById('tasks-view').hidden=view!=='tasks';
   document.getElementById('review-view').hidden=view!=='review';
+  document.getElementById('health-view').hidden=view!=='health';
   document.querySelectorAll('.tab').forEach(tab=>{const active=tab.dataset.view===view;tab.classList.toggle('active',active);tab.setAttribute('aria-selected',String(active));});
   if(view==='review') initializeReview();
+  if(view==='health') initializeHealth();
+}
+
+function isoLocalDate(date){const offset=date.getTimezoneOffset()*60000;return new Date(date-offset).toISOString().slice(0,10);}
+function mondayFor(date){const result=new Date(date);result.setDate(result.getDate()-((result.getDay()+6)%7));return isoLocalDate(result);}
+function healthNumber(value,digits=0){return value===null||value===undefined?'Missing':Number(value).toLocaleString(undefined,{maximumFractionDigits:digits});}
+function healthCell(value,suffix=''){return value===null||value===undefined?'—':`${healthNumber(value,1)}${suffix}`;}
+function metricCard(container,label,value,detail){const card=document.createElement('article');card.className='metric-card';const name=document.createElement('p');name.className='metric-label';name.textContent=label;const number=document.createElement('strong');number.textContent=value;const note=document.createElement('p');note.className='meta';note.textContent=detail;card.append(name,number,note);container.appendChild(card);}
+function compactRow(container,name,value){const row=document.createElement('div');row.className='compact-row';const label=document.createElement('span');label.textContent=name;const detail=document.createElement('strong');detail.textContent=value;row.append(label,detail);container.appendChild(row);}
+
+async function initializeHealth(){
+  const timezone=document.getElementById('health-timezone');
+  if(!timezone.value)timezone.value=Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Chicago';
+  const start=document.getElementById('health-week-start');
+  if(!start.value)start.value=mondayFor(new Date());
+  await loadHealthWeek();
+}
+
+async function loadHealthWeek(){
+  const start=document.getElementById('health-week-start').value;
+  const timezone=document.getElementById('health-timezone').value;
+  if(!start||!timezone){setStatus('Choose a health week and timezone.',true);return;}
+  setStatus('Loading stored health week…');
+  try{
+    const summary=await api(`/api/health/weekly?${new URLSearchParams({week_start:start,timezone})}`);
+    renderHealthWeek(summary);
+    setStatus(`Health week loaded · ${summary.coverage.stored_days}/7 stored days`);
+  }catch(error){document.getElementById('health-results').hidden=true;setStatus(error.message,true);}
+}
+
+function renderHealthWeek(summary){
+  document.getElementById('health-results').hidden=false;
+  document.getElementById('health-week-label').textContent=`${summary.week_start} through ${summary.week_end}`;
+  document.getElementById('health-coverage').textContent=`${summary.coverage.stored_days}/7 stored days · ${summary.timezone} · retrieved ${formatDate(summary.retrieved_at)}`;
+  const warningList=document.getElementById('health-warnings');warningList.replaceChildren();warningList.hidden=summary.warnings.length===0;
+  summary.warnings.forEach(text=>{const item=document.createElement('li');item.textContent=text;warningList.appendChild(item);});
+
+  const metrics=document.getElementById('health-metrics');metrics.replaceChildren();const m=summary.metrics;
+  metricCard(metrics,'Steps',healthNumber(m.steps.total),`${m.steps.coverage_days}/7 days · ${healthNumber(m.steps.average_recorded_day)} average recorded day`);
+  metricCard(metrics,'Sleep',m.sleep_minutes.average_recorded_day===null?'Missing':`${healthNumber(m.sleep_minutes.average_recorded_day/60,1)} hr/day`,`${m.sleep_minutes.coverage_days}/7 days · ${healthNumber(m.sleep_minutes.total/60,1)} total hours`);
+  metricCard(metrics,'Food energy',m.food_energy_kilocalories.total===null?'Missing':`${healthNumber(m.food_energy_kilocalories.total)} kcal`,`${m.food_energy_kilocalories.coverage_days}/7 logged days`);
+  metricCard(metrics,'Energy burned',m.energy_burned_kilocalories.total===null?'Missing':`${healthNumber(m.energy_burned_kilocalories.total)} kcal`,`${m.energy_burned_kilocalories.coverage_days}/7 days · basal + active`);
+  metricCard(metrics,'Energy balance',m.energy_balance_kilocalories===null?'Not calculated':`${m.energy_balance_kilocalories>0?'+':''}${healthNumber(m.energy_balance_kilocalories)} kcal`,m.energy_balance_kilocalories===null?'Requires complete food and burn coverage':'Logged food minus total burned');
+  metricCard(metrics,'Water',m.water_milliliters.total===null?'Missing':`${healthNumber(m.water_milliliters.total/1000,1)} L`,`${m.water_milliliters.coverage_days}/7 logged days`);
+  metricCard(metrics,'Weight',m.weight_kilograms.average===null?'Missing':`${healthNumber(m.weight_kilograms.average,1)} kg`,`${m.weight_kilograms.coverage_days}/7 measured days`);
+  metricCard(metrics,'Resting heart rate',m.resting_heart_rate_bpm.average===null?'Missing':`${healthNumber(m.resting_heart_rate_bpm.average)} bpm`,`${m.resting_heart_rate_bpm.coverage_days}/7 measured days`);
+
+  const exercise=document.getElementById('health-exercises');exercise.replaceChildren();const exerciseEntries=Object.entries(summary.exercises);
+  if(!exerciseEntries.length)compactRow(exercise,'No exercise records','Missing');
+  exerciseEntries.sort((a,b)=>b[1].minutes-a[1].minutes).forEach(([name,value])=>compactRow(exercise,name,`${value.sessions} session${value.sessions===1?'':'s'} · ${healthNumber(value.minutes)} min`));
+  const nutrients=document.getElementById('health-nutrients');nutrients.replaceChildren();const nutrientEntries=Object.entries(summary.nutrients);
+  if(!nutrientEntries.length)compactRow(nutrients,'No nutrients logged','Missing');
+  nutrientEntries.sort((a,b)=>a[0].localeCompare(b[0])).forEach(([name,value])=>compactRow(nutrients,name,`${value.coverage_days}/7 days`));
+  const sources=document.getElementById('health-sources');sources.replaceChildren();
+  if(!summary.source_packages.length)compactRow(sources,'No source packages','Missing');
+  summary.source_packages.forEach(source=>compactRow(sources,source,'Observed'));
+
+  const body=document.getElementById('health-days');body.replaceChildren();
+  summary.days.forEach(day=>{const row=document.createElement('tr');[
+    day.local_date,healthCell(day.steps),healthCell(day.sleep_minutes,' min'),healthCell(day.food_energy_kilocalories,' kcal'),
+    healthCell(day.energy_burned_kilocalories,' kcal'),healthCell(day.water_milliliters,' mL'),healthCell(day.average_weight_kilograms,' kg')
+  ].forEach(value=>{const cell=document.createElement('td');cell.textContent=value;row.appendChild(cell);});body.appendChild(row);});
 }
 
 async function initializeReview(){
@@ -233,9 +296,10 @@ document.getElementById('review-next').addEventListener('click',()=>{if(viewedSt
 document.getElementById('review-restart').addEventListener('click',()=>reviewAction('restart'));
 document.getElementById('review-abandon').addEventListener('click',()=>reviewAction('abandon'));
 document.getElementById('review-archive').addEventListener('click',()=>reviewAction('archive'));
+document.getElementById('health-week-form').addEventListener('submit',event=>{event.preventDefault();loadHealthWeek();});
 document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>switchView(tab.dataset.view)));
 
 fillSelect('filter-category',categories);fillSelect('filter-domain',domains);fillSelect('filter-requester',requesters);
 ['filter-status','filter-category','filter-domain','filter-requester'].forEach(id=>document.getElementById(id).addEventListener('change',renderTasks));
-document.getElementById('refresh').addEventListener('click',()=>currentView==='tasks'?loadTasks():(reviewSession?loadReview(reviewSession.id):initializeReview()));
+document.getElementById('refresh').addEventListener('click',()=>currentView==='tasks'?loadTasks():currentView==='health'?loadHealthWeek():(reviewSession?loadReview(reviewSession.id):initializeReview()));
 loadTasks();
