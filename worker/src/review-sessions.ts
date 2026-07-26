@@ -1,4 +1,5 @@
 import { readCanonicalTasks } from "./task-reader";
+import { addDays, readWeeklyHealthSummary, type WeeklyHealthSummary } from "./health-reader";
 
 export type ReviewSessionStatus =
   "not_started" | "in_progress" | "ready_for_packet" | "completed" | "abandoned" | "archived";
@@ -90,9 +91,10 @@ export interface ReviewSession {
   task_references: string[];
   steps: Array<{ step: number; state: ReviewStepState; updated_at: string }>;
   answers: ReviewAnswer[];
+  health_context: WeeklyHealthSummary | null;
 }
 
-interface ReviewSessionRow extends Omit<ReviewSession, "task_references" | "steps" | "answers"> {}
+interface ReviewSessionRow extends Omit<ReviewSession, "task_references" | "steps" | "answers" | "health_context"> {}
 
 export class ReviewSessionError extends Error {
   constructor(public readonly code: "invalid_request" | "not_found" | "conflict", message: string) {
@@ -146,21 +148,39 @@ async function assertEditable(db: D1Database, id: string): Promise<ReviewSession
 
 export async function getReviewSession(db: D1Database, id: string): Promise<ReviewSession> {
   const row = await sessionRow(db, id);
-  const [references, steps, answers] = await Promise.all([
+  const [references, steps, answers, health] = await Promise.all([
     db.prepare("SELECT item_id FROM sunday_review_task_reference WHERE session_id = ? ORDER BY item_id")
       .bind(id).all<{ item_id: string }>(),
     db.prepare("SELECT step, state, updated_at FROM sunday_review_step_state WHERE session_id = ? ORDER BY step")
       .bind(id).all<{ step: number; state: ReviewStepState; updated_at: string }>(),
     db.prepare(`SELECT step, field_key, response_kind, input_kind, raw_input, created_at, updated_at
       FROM sunday_review_answer WHERE session_id = ? ORDER BY step, field_key`)
-      .bind(id).all<ReviewAnswer>()
+      .bind(id).all<ReviewAnswer>(),
+    db.prepare("SELECT summary_json FROM sunday_review_health_snapshot WHERE session_id = ?")
+      .bind(id).first<{ summary_json: string }>()
   ]);
   return {
     ...row,
     task_references: references.results.map(({ item_id }) => item_id),
     steps: steps.results,
-    answers: answers.results
+    answers: answers.results,
+    health_context: health ? JSON.parse(health.summary_json) as WeeklyHealthSummary : null
   };
+}
+
+export async function refreshReviewHealthContext(db: D1Database, id: string): Promise<ReviewSession> {
+  const row = await assertEditable(db, id);
+  const rangeStart = addDays(row.week_start, -7);
+  const summary = await readWeeklyHealthSummary(db, rangeStart, row.timezone);
+  await db.prepare(`INSERT INTO sunday_review_health_snapshot
+    (session_id, range_start, range_end, timezone, retrieved_at, summary_json)
+    VALUES (?, ?, ?, ?, ?, ?)
+    ON CONFLICT(session_id) DO UPDATE SET
+      range_start = excluded.range_start, range_end = excluded.range_end,
+      timezone = excluded.timezone, retrieved_at = excluded.retrieved_at,
+      summary_json = excluded.summary_json
+  `).bind(id, summary.week_start, summary.week_end, summary.timezone, summary.retrieved_at, JSON.stringify(summary)).run();
+  return getReviewSession(db, id);
 }
 
 export async function findActiveReviewSession(
@@ -210,7 +230,7 @@ async function createSession(
       .bind(id, task.id));
   }
   await db.batch(statements);
-  return getReviewSession(db, id);
+  return refreshReviewHealthContext(db, id);
 }
 
 export async function startReviewSession(

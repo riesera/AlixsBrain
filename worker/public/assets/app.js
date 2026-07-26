@@ -220,7 +220,7 @@ function renderReviewQuestion(){
   document.getElementById('review-previous').disabled=step.step===1;
   document.getElementById('review-next').disabled=step.step===13;
   document.getElementById('review-save-state').textContent=step.automatic?'Completed automatically from canonical tasks.':'';
-  const taskContext=document.getElementById('review-task-context');taskContext.hidden=!step.automatic;taskContext.replaceChildren();
+  const taskContext=document.getElementById('review-task-context');taskContext.hidden=!(step.automatic||step.step===8);taskContext.replaceChildren();
   if(step.automatic){
     const note=document.createElement('p');note.className='review-task-note';note.textContent='Current canonical values for the task IDs referenced when this review began. Later task edits may differ from the original retrieval time.';taskContext.appendChild(note);
     const referenced=new Set(reviewSession.task_references);const reviewItems=items.filter(item=>referenced.has(item.id));
@@ -228,6 +228,7 @@ function renderReviewQuestion(){
     for(const item of reviewItems){const row=document.createElement('div');row.className='review-task-row';const title=document.createElement('strong');title.textContent=item.raw_text;const meta=document.createElement('span');meta.textContent=[item.status,item.domain,item.project,item.due_at?`Due ${formatDate(item.due_at)}`:null].filter(Boolean).join(' · ');row.append(title,meta);taskContext.appendChild(row);}
     return;
   }
+  if(step.step===8)renderReviewHealthContext(taskContext);
 
   questionIndex=Math.min(questionIndex,Math.max(0,step.questions.length-1));
   const question=currentQuestion();const answer=answerFor(step.step,question.field_key);
@@ -239,6 +240,32 @@ function renderReviewQuestion(){
   const submit=form.querySelector('button[type="submit"]');
   submit.textContent=questionIndex===step.questions.length-1?'Save and finish section':'Save and continue';
   document.getElementById('review-save-state').textContent=answer?`Saved ${formatDate(answer.updated_at)}`:'';
+}
+
+function renderReviewHealthContext(container){
+  const summary=reviewSession.health_context;
+  const note=document.createElement('p');note.className='review-task-note';
+  note.textContent=summary
+    ? `Verified Health Connect look-back: ${summary.week_start} through ${summary.week_end} · ${summary.coverage.stored_days}/7 stored days · retrieved ${formatDate(summary.retrieved_at)}.`
+    : 'No verified Health Connect snapshot is attached to this review yet.';
+  container.appendChild(note);
+  if(summary){
+    const grid=document.createElement('div');grid.className='review-health-metrics';const m=summary.metrics;
+    metricCard(grid,'Steps',healthNumber(m.steps.total),`${m.steps.coverage_days}/7 days`);
+    metricCard(grid,'Sleep',m.sleep_minutes.average_recorded_day===null?'Missing':`${healthNumber(m.sleep_minutes.average_recorded_day/60,1)} hr/day`,`${m.sleep_minutes.coverage_days}/7 days`);
+    metricCard(grid,'Food energy',m.food_energy_kilocalories.total===null?'Missing':`${healthNumber(m.food_energy_kilocalories.total)} kcal`,`${m.food_energy_kilocalories.coverage_days}/7 logged days`);
+    metricCard(grid,'Energy burned',m.energy_burned_kilocalories.total===null?'Missing':`${healthNumber(m.energy_burned_kilocalories.total)} kcal`,`${m.energy_burned_kilocalories.coverage_days}/7 days`);
+    metricCard(grid,'Water',m.water_milliliters.total===null?'Missing':`${healthNumber(m.water_milliliters.total/1000,1)} L`,`${m.water_milliliters.coverage_days}/7 logged days`);
+    metricCard(grid,'Weight',m.weight_kilograms.average===null?'Missing':`${healthNumber(m.weight_kilograms.average,1)} kg`,`${m.weight_kilograms.coverage_days}/7 days`);
+    container.appendChild(grid);
+    if(summary.warnings.length){const warnings=document.createElement('ul');warnings.className='warning-list';summary.warnings.forEach(text=>{const item=document.createElement('li');item.textContent=text;warnings.appendChild(item);});container.appendChild(warnings);}
+    const exerciseEntries=Object.entries(summary.exercises);
+    if(exerciseEntries.length){const exercise=document.createElement('p');exercise.className='review-health-exercise';exercise.textContent=`Exercise: ${exerciseEntries.map(([name,value])=>`${name} — ${value.sessions} session${value.sessions===1?'':'s'}, ${healthNumber(value.minutes)} min`).join('; ')}`;container.appendChild(exercise);}
+  }
+  const refresh=document.createElement('button');refresh.type='button';refresh.className='secondary';refresh.textContent=summary?'Refresh verified health snapshot':'Load verified health snapshot';
+  refresh.addEventListener('click',async()=>{refresh.disabled=true;try{reviewSession=await api(`/api/reviews/${encodeURIComponent(reviewSession.id)}/health-context`,{method:'PUT'});renderReview();setStatus('Verified health context attached to this review.');}catch(error){setStatus(error.message,true);refresh.disabled=false;}});
+  container.appendChild(refresh);
+  const subjective=document.createElement('p');subjective.className='review-task-note';subjective.textContent='Health Connect cannot establish stress, subjective energy, pain, illness, recovery, or realistic minimums. Add those below when relevant.';container.appendChild(subjective);
 }
 
 async function saveReviewResponse(responseKind,rawInput=null){

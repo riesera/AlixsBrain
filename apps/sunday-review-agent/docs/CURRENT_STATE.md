@@ -1,177 +1,166 @@
-# Current State
+# Sunday Review Agent — Current State
 
 **Last updated:** July 26, 2026  
-**Project stage:** Documentation and planning  
-**Implementation status:** Not started
+**Project stage:** V0.1 implementation  
+**Active milestone:** Deterministic Markdown Sunday Planning Packet generator
 
-## Current Active Milestone
+## Executive Summary
 
-The active milestone is **V0.0: documentation foundation and inspection of the existing task system**.
+The original documentation/inspection phase is complete. The active Cloudflare Worker now contains the first two V0.1 increments and a production dashboard interface:
 
-The immediate objective is to turn the product vision into a verified implementation plan without assuming facts about the current repository, Cloudflare architecture, task schema, APIs, authentication, or deployment.
+- V0.1A canonical read-only task snapshot: complete;
+- V0.1B resumable guided review collector: complete for typed and pasted input;
+- shared Health Connect weekly context in Step 8: complete;
+- V0.1C Markdown planning packet: not implemented and is the next Sunday Review milestone.
 
-## What Is Known
+The dashboard is deployed at `https://alixsbrain-capture.alix-98e.workers.dev` behind the existing HTTP Basic authentication. It has Tasks, Sunday Review, and Health tabs.
 
-### Product Purpose
+## Implemented Architecture
 
-The Sunday Review Agent is a specialized project within Alix's External Brain. It owns the weekly review workflow and exists to reduce the memory, gathering, and blank-page burden of Sunday planning.
+The feature lives in the existing `worker/` Cloudflare Worker and D1 database rather than a separate service.
 
-### V0.1 Product Scope
+Reusable domain modules:
 
-The first usable version is a guided, non-autonomous collector and Markdown packet generator.
+- `worker/src/task-reader.ts` — verified canonical task reads independent of Telegram and dashboard rendering;
+- `worker/src/review-sessions.ts` — review guide, session persistence, answers, progress, lifecycle, task references, and health snapshots;
+- `worker/src/health-reader.ts` — shared deterministic weekly health aggregation;
+- `worker/src/review-api.ts` — thin authenticated review HTTP adapter;
+- `worker/src/health-api.ts` — thin authenticated weekly health read adapter;
+- `worker/public/` — temporary responsive AlixsBrain dashboard interface.
 
-It must:
+Telegram remains an ingestion adapter. Sunday Review logic does not depend on Telegram messages or identity fields.
 
-- read real open tasks from the existing Cloudflare-backed task system;
-- organize available task data without inventing missing metadata;
-- guide Alix through the parts of the review that cannot yet be populated automatically;
-- accept pasted, uploaded, or manually entered summaries;
-- save progress and resume an interrupted review;
-- generate a Sunday Planning Packet for collaborative planning in ChatGPT;
-- keep source facts, manual input, generated flags, uncertainty, and missing data distinguishable.
+## V0.1A — Canonical Task Reader
 
-It must not independently plan the week or change external systems.
+Implemented behavior:
 
-### Shared-Infrastructure Boundary
+- reads only `item`, `item_flag`, and preserved `raw_capture.raw_text` needed for canonical task output;
+- preserves raw capture wording exactly;
+- returns only verified fields and retains missing optional values as null;
+- supports Inbox, Open, Waiting, Done, and Archived explicitly;
+- excludes `metadata_json`, Telegram identity fields, credentials, and tokens;
+- preserves existing dashboard API compatibility;
+- uses stable item IDs as review task references.
 
-- Alix's External Brain owns shared data and shared infrastructure.
-- The existing task system owns canonical to-do data.
-- Canonical task data currently lives in Cloudflare-backed infrastructure.
-- The Sunday Review Agent reads that data.
-- The Sunday Review Agent may own review-session state and generated packets.
-- Review-session state is not a second canonical task store.
-- Telegram may trigger or display the workflow, but reusable Sunday Review logic must not be owned by Telegram.
-- A future dashboard or parent External Brain must be able to invoke the same workflow.
+Known limitation: reliable carry-forward history does not yet exist. Step 7 therefore remains manual and must not infer repeated carry-forward from task age alone.
 
-### V0.1 Inputs
+## V0.1B — Resumable Guided Review
 
-The task system is the only required automatic source.
+Implemented behavior:
 
-Other context may initially be entered manually, including:
+- starts or resumes an explicit week and IANA timezone;
+- persists one active review per week/date range/timezone;
+- saves raw typed or pasted answers exactly;
+- supports answered, none, not applicable, unknown, skipped, and deferred responses;
+- tracks completed/skipped steps and resumes at the first incomplete step;
+- references the canonical task IDs captured when the review begins;
+- supports explicit restart, abandon, complete, and archive transitions;
+- prevents terminal sessions from being edited;
+- marks the collector `ready_for_packet` only after all collection steps are completed or skipped;
+- does not write to canonical tasks or external systems.
 
-- calendar and fixed commitments;
-- health, capacity, workouts, food, and hydration;
-- learning progress;
-- CLM operations and business context;
-- projects and decisions waiting on others;
-- home, family, dogs, and restoration.
+The dashboard implements all 13 collection sections defined by `REVIEW_FLOW.md`. Step 2 displays canonical task context automatically. Other steps remain manual except for the read-only health evidence described below.
 
-### V0.1 Output
+Not yet implemented in the collector:
 
-A structured Markdown Sunday Planning Packet that can be pasted into ChatGPT.
+- actual file upload handling despite the schema reserving `uploaded_summary` as an input kind;
+- customizable role vocabularies or recurring prompts;
+- automatic calendar, learning, project, journal, or business integrations;
+- reliable carry-forward comparison across prior reviews.
 
-## What Is Assumed but Not Yet Verified
+## Health and Capacity Integration
 
-The following statements are product assumptions, not confirmed implementation facts:
+For a review covering an upcoming planning week, Step 8 snapshots the seven calendar days immediately preceding `week_start` from canonical shared health summaries.
 
-1. The existing task system exposes a safe read path that Sunday Review can reuse.
-2. Tasks have stable identifiers or another reliable source reference.
-3. Incomplete status can be queried without scraping Telegram messages.
-4. Due dates distinguish an explicitly undated task from a missing or unreadable field.
-5. Domain and project information exist in a structured form.
-6. Owner, priority, status, waiting-on, source, and creation metadata may exist.
-7. Enough history exists to identify repeated carry-forward behavior.
-8. The task system can be read without coupling the workflow to Telegram.
-9. Current authentication can be extended or reused safely.
-10. A small amount of Sunday Review-owned state can be persisted for resumability.
-11. Markdown export can be produced in a way usable from the chosen interface.
-12. Uploaded summaries can be accepted in V0.1 without requiring a broad document-ingestion subsystem.
+The snapshot preserves:
 
-Each assumption must be confirmed, revised, or rejected after codebase inspection.
+- evidence start/end dates and timezone;
+- retrieval timestamp;
+- stored-day and metric coverage;
+- totals, averages, ranges, and daily validation rows;
+- friendly exercise summaries;
+- sparse nutrient/source coverage;
+- missing-data and incomplete-range warnings.
 
-## Unresolved Product Decisions
+The snapshot excludes phone credentials and device IDs. It is frozen for resumability, with an explicit refresh available while the review remains editable. Health Connect does not answer the manual question: subjective energy, stress, pain, illness, recovery, capacity, and realistic minimums still require Alix's input.
 
-These questions do not block documentation but must be resolved during implementation planning:
+Energy balance is omitted unless both food and total-burned-energy coverage are complete for all seven days. Health output remains non-diagnostic.
 
-- What is the exact definition of the upcoming week: Monday through Sunday, Sunday through Saturday, or configurable?
-- What constitutes an overdue task when due-time or timezone information is incomplete?
-- How should kid-week status be represented and sourced in V0.1?
-- Which standing roles should appear by default, and how can Alix customize them?
-- Which review sections are required, optional, or hidden when not relevant?
-- Should raw manual input be retained indefinitely, retained for a limited period, or removable after packet generation?
-- Should generated packets be immutable historical snapshots, regenerable views, or both?
-- How should a user explicitly restart, abandon, archive, or duplicate a review session?
-- What minimum task metadata is required to proceed if the source schema is sparse?
-- Should project-state input remain review-local at first or be written to a future shared project system only after approval?
+## D1 State Owned by Sunday Review
 
-## Unresolved Technical Decisions
+Migrations:
 
-The following choices are intentionally open:
+- `0003_sunday_review_sessions.sql`
+  - `sunday_review_session`
+  - `sunday_review_task_reference`
+  - `sunday_review_answer`
+  - `sunday_review_step_state`
+- `0005_sunday_review_health_snapshot.sql`
+  - `sunday_review_health_snapshot`
 
-- repository placement;
-- module and service boundaries;
-- runtime and programming language;
-- deployment platform;
-- review-session persistence mechanism;
-- task read interface;
-- authentication and authorization approach;
-- Telegram adapter design;
-- future dashboard interface;
-- file-upload handling;
-- Markdown export and storage path;
-- observability and logging design;
-- testing strategy;
-- model usage, provider, and framework;
-- whether V0.1 needs any model at all.
+Review state is workflow state, not a second canonical task or health store.
 
-No documentation should imply these choices have been made.
+## APIs
 
-## Immediate Next Step
+All review reads/writes use existing dashboard Basic authentication:
 
-Conduct an implementation-planning inspection of the existing task system.
+- `GET /api/reviews/guide`
+- `POST /api/reviews`
+- `GET /api/reviews/active`
+- `GET /api/reviews/:id`
+- `PUT /api/reviews/:id/answers/:step/:field_key`
+- `PUT /api/reviews/:id/steps/:step`
+- `PUT /api/reviews/:id/health-context`
+- `POST /api/reviews/:id/actions`
 
-The inspection should produce a short technical findings document containing:
-
-1. repository structure and relevant modules;
-2. Cloudflare products and bindings in use;
-3. canonical task schema with examples;
-4. field nullability and missing-value behavior;
-5. stable identifiers;
-6. query/read paths;
-7. authentication and authorization;
-8. task-history availability;
-9. Telegram-specific versus reusable logic;
-10. deployment and local-development process;
-11. likely location for Sunday Review workflow state;
-12. risks, constraints, and recommended V0.1 packaging.
-
-After that inspection, the next planning session should convert `REVIEW_FLOW.md` into an implementation design and milestone checklist.
+Canonical weekly health validation is available separately at `GET /api/health/weekly`.
 
 ## Explicitly Not Built
 
-As of this document date, none of the following exists for the Sunday Review Agent:
+- Markdown Sunday Planning Packet generation, copy, download, or snapshot persistence;
+- ChatGPT/API model integration;
+- automatic prioritization or scheduling;
+- task/calendar/workout/reminder write actions;
+- automatic external-system changes;
+- file upload storage or parsing;
+- historical Health Connect export import and retention compaction;
+- background Health Connect synchronization;
+- multi-user identity or authorization.
 
-- repository or project directory;
-- application code;
-- task-system connector;
-- task snapshot generator;
-- guided review interface;
-- review-session storage;
-- resume behavior;
-- upload or paste ingestion;
-- role activation logic;
-- carry-forward analysis;
-- project-state model;
-- provenance labeling implementation;
-- packet generator;
-- ChatGPT integration;
-- Google Calendar integration;
-- health or fitness integration;
-- learning integration;
-- journal integration;
-- planning model or recommendation engine;
-- calendar, task, workout, reminder, or External Brain write actions;
-- tests, deployment, monitoring, or operational runbooks.
+## Next Milestone — V0.1C Packet Generator
 
-The project should continue to be described as planned, not implemented.
+Build a deterministic Markdown generator from a saved review session, its referenced canonical task read, and its frozen health context.
 
-## Documentation Completed in This Foundation
+Acceptance boundary:
 
-- `README.md`
-- `SOUL.md`
-- `ROADMAP.md`
-- `CURRENT_STATE.md`
-- `DECISIONS.md`
-- `REVIEW_FLOW.md`
+1. use the stable packet section order in `REVIEW_FLOW.md`;
+2. label canonical facts, manual input, generated grouping, uncertainty, and missing data distinctly;
+3. preserve the explicit upcoming week and timezone;
+4. include the health evidence range/retrieval time/coverage without diagnostic interpretation;
+5. include raw task wording and raw manual input where the packet requires it;
+6. regenerate deterministically from the same session snapshot;
+7. provide copy/download from the dashboard;
+8. make no external changes.
 
-These documents define the product foundation. They do not replace inspection of the existing codebase.
+After V0.1C, validate one complete real Sunday Review before expanding carry-forward intelligence or additional integrations.
+
+## Verification and Operations
+
+Worker verification commands:
+
+```powershell
+cd worker
+npm.cmd test
+npm.cmd run check
+node --check public\assets\app.js
+```
+
+Deployment:
+
+```powershell
+cd worker
+npx.cmd wrangler d1 migrations apply DB --remote
+npx.cmd wrangler deploy
+```
+
+Secrets must remain in Cloudflare Worker secrets or local ignored configuration. Never commit dashboard, Telegram, or Health Sync credentials.

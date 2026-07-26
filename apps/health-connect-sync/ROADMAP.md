@@ -25,14 +25,16 @@ This is a shared External Brain integration. It supplies trustworthy health cont
 - Explicitly distinguish food consumed, energy burned, and incomplete energy-balance evidence.
 - Add a small authenticated dashboard view for validating the derived week before it is used automatically.
 
-## Next — Sunday Review integration
+## Completed — Sunday Review health context
 
 - Prefill the Health and Capacity review step from the weekly health API.
 - Preserve retrieval time, covered dates, source coverage, and missing-data notices.
 - Keep subjective energy, stress, pain, illness, recovery, and realistic capacity as manual questions.
-- Include the verified health summary in the Markdown planning packet without diagnostic claims.
+- Expose the saved, verified context to the future Markdown packet generator without diagnostic claims.
 
-## Then — Historical export importer and compaction
+The Markdown packet generator is still a Sunday Review milestone; health context is ready for it but does not generate the packet itself.
+
+## Next — Historical export importer and compaction
 
 - Select a Health Connect export through Android's system file picker.
 - Inspect and version the actual export format before importing it.

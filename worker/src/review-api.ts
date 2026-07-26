@@ -3,6 +3,7 @@ import {
   getReviewSession,
   REVIEW_GUIDE,
   ReviewSessionError,
+  refreshReviewHealthContext,
   saveReviewAnswer,
   setReviewStepState,
   startReviewSession,
@@ -72,6 +73,11 @@ export async function reviewApi(request: Request, env: Env, url: URL): Promise<R
     const sessionMatch = pathname.match(/^\/api\/reviews\/([^/]+)$/);
     if (request.method === "GET" && sessionMatch) {
       return json(await getReviewSession(env.DB, decodeURIComponent(sessionMatch[1])));
+    }
+
+    const healthMatch = pathname.match(/^\/api\/reviews\/([^/]+)\/health-context$/);
+    if (request.method === "PUT" && healthMatch) {
+      return json(await refreshReviewHealthContext(env.DB, decodeURIComponent(healthMatch[1])));
     }
 
     const answerMatch = pathname.match(/^\/api\/reviews\/([^/]+)\/answers\/(\d+)\/([^/]+)$/);

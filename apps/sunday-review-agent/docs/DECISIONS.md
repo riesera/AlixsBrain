@@ -490,3 +490,31 @@ Daily summaries are sufficient to prefill the weekly Health and Capacity prompt 
 ### Reconsideration Conditions
 
 Revisit the daily contract if real source data cannot represent corrections, time-zone transitions, or the coverage needed for trustworthy weekly interpretation.
+
+---
+
+## D-017 — Health Context Is a Frozen Seven-Day Look-Back
+
+**Status:** Accepted
+
+### Decision
+
+For a Sunday Review whose explicit dates describe the upcoming planning week, automated Health and Capacity evidence covers the seven calendar days immediately preceding `week_start`. The derived weekly health summary is snapshotted into Sunday Review-owned workflow context with its source range, timezone, retrieval time, coverage, warnings, and non-diagnostic metrics.
+
+Step 8 remains a manual review step. The snapshot prefills observable context but does not answer questions about subjective energy, stress, pain, illness, recovery, capacity, or realistic minimums. An explicit refresh may replace the session snapshot from current canonical daily data while the review remains editable.
+
+### Rationale
+
+Completed workouts, recent sleep, and logged nutrition are look-back evidence used to make the upcoming plan realistic. Freezing the retrieved summary prevents a resumed review from silently changing when corrected daily health records arrive later.
+
+### Implications
+
+- Sunday Review stores a derived snapshot, not canonical health records or phone credentials.
+- The snapshot remains traceable to the shared health reader and its retrieval time.
+- Missing or incomplete logging produces visible warnings and never becomes zero.
+- Energy balance remains unavailable unless food and burned-energy coverage are complete for all seven days.
+- Refresh is explicit and unavailable after the review becomes terminal.
+
+### Reconsideration Conditions
+
+Revisit the fixed look-back if real review use shows that a different evidence window or user-selectable comparison range materially improves planning clarity.

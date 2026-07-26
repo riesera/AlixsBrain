@@ -65,4 +65,25 @@ describe("review session API", () => {
     });
     expect(invalid.status).toBe(400);
   });
+
+  it("snapshots the prior seven health days and explicitly refreshes existing context", async () => {
+    const created = await request("/api/reviews", {
+      method: "POST",
+      body: JSON.stringify({ week_start: "2026-09-21", week_end: "2026-09-27", timezone: "America/Chicago" })
+    });
+    const session = await created.json<{ id: string; health_context: { week_start: string; week_end: string; coverage: { stored_days: number } } }>();
+    expect(session.health_context).toMatchObject({ week_start: "2026-09-14", week_end: "2026-09-20", coverage: { stored_days: 0 } });
+
+    await env.DB.prepare(`INSERT INTO health_daily_summary (
+      device_id, local_date, timezone, collected_at, received_at, steps, sleep_minutes,
+      exercise_json, water_milliliters, food_energy_kilocalories, energy_burned_kilocalories,
+      nutrients_json, average_weight_kilograms, average_resting_heart_rate_bpm, source_packages_json
+    ) VALUES ('api-review-phone', '2026-09-20', 'America/Chicago', ?, ?, 8000, NULL, '{}', NULL, NULL, 2200, '{}', NULL, NULL, '[]')`)
+      .bind("2026-09-20T23:00:00Z", "2026-09-20T23:01:00Z").run();
+
+    const refreshed = await request(`/api/reviews/${session.id}/health-context`, { method: "PUT" });
+    const value = await refreshed.json<{ health_context: { coverage: { stored_days: number }; metrics: { steps: { total: number } } } }>();
+    expect(value.health_context.coverage.stored_days).toBe(1);
+    expect(value.health_context.metrics.steps.total).toBe(8000);
+  });
 });

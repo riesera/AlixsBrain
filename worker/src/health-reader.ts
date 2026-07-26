@@ -136,3 +136,5 @@ export async function readWeeklyHealthSummary(db: D1Database, weekStart: string,
     days
   };
 }
+
+export type WeeklyHealthSummary = Awaited<ReturnType<typeof readWeeklyHealthSummary>>;

@@ -28,8 +28,18 @@ async function insertCanonicalTask(status: "Open" | "Done", rawText: string): Pr
   return itemId;
 }
 
+async function insertHealthDay(localDate: string, timezone = "America/Chicago"): Promise<void> {
+  await env.DB.prepare(`INSERT INTO health_daily_summary (
+    device_id, local_date, timezone, collected_at, received_at, steps, sleep_minutes,
+    exercise_json, water_milliliters, food_energy_kilocalories, energy_burned_kilocalories,
+    nutrients_json, average_weight_kilograms, average_resting_heart_rate_bpm, source_packages_json
+  ) VALUES ('review-health-phone', ?, ?, ?, ?, 6000, 420, '{}', NULL, NULL, 2100, '{}', NULL, NULL, '["health.source"]')`)
+    .bind(localDate, timezone, `${localDate}T23:00:00Z`, `${localDate}T23:01:00Z`).run();
+}
+
 describe("resumable guided review sessions", () => {
   it("starts with explicit week context and references only reviewable canonical tasks", async () => {
+    await insertHealthDay("2026-08-01");
     const openId = await insertCanonicalTask("Open", "exact canonical text");
     const doneId = await insertCanonicalTask("Done", "completed text");
     const session = await startReviewSession(env.DB, {
@@ -42,6 +52,11 @@ describe("resumable guided review sessions", () => {
     expect(session.task_references).not.toContain(doneId);
     expect(JSON.stringify(session)).not.toContain("exact canonical text");
     expect(JSON.stringify(session)).not.toContain("private-user");
+    expect(session.health_context).toMatchObject({
+      week_start: "2026-07-27", week_end: "2026-08-02",
+      coverage: { requested_days: 7, stored_days: 1, device_count: 1 }
+    });
+    expect(JSON.stringify(session.health_context)).not.toContain("review-health-phone");
   });
 
   it("preserves raw typed and pasted answers exactly and resumes at the first incomplete step", async () => {
