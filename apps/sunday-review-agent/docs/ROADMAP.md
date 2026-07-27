@@ -144,6 +144,8 @@ Alix can complete the review in manageable sections without remembering the stru
 
 ### V0.1C — Sunday Planning Packet Generator
 
+**Status: Complete as of July 26, 2026.** See `CURRENT_STATE.md` for deployed behavior and remaining field validation.
+
 #### Value
 
 Alix receives a complete, trustworthy Markdown packet that can be pasted into ChatGPT for collaborative planning.

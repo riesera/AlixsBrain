@@ -228,6 +228,9 @@ async function createSession(
   for (const task of tasks) {
     statements.push(db.prepare("INSERT INTO sunday_review_task_reference (session_id, item_id) VALUES (?, ?)")
       .bind(id, task.id));
+    statements.push(db.prepare(`INSERT INTO sunday_review_task_snapshot
+      (session_id, item_id, retrieved_at, snapshot_kind, task_json) VALUES (?, ?, ?, 'initial', ?)`)
+      .bind(id, task.id, now, JSON.stringify(task)));
   }
   await db.batch(statements);
   return refreshReviewHealthContext(db, id);

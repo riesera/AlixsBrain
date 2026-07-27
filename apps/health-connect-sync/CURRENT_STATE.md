@@ -15,6 +15,7 @@
 - Manual 30-day sync writes one idempotent D1 summary per device, local date, and timezone.
 - The authenticated Health dashboard and `GET /api/health/weekly` derive seven-day totals, averages, ranges, logging coverage, exercises, sources, daily validation rows, and warnings.
 - Sunday Review snapshots the seven days immediately preceding its upcoming planning week and shows that evidence in Step 8 while keeping subjective capacity questions manual.
+- The deterministic Markdown Sunday Planning Packet includes that frozen evidence range, retrieval time, coverage, warnings, and manual subjective context.
 
 ## Verified Production Data
 

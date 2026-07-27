@@ -61,3 +61,21 @@ export async function readCanonicalTasks(
     flags: JSON.parse(flags_json) as ItemFlag[]
   }));
 }
+
+/** Reads the same verified projection for explicit stable IDs, across all statuses. */
+export async function readCanonicalTasksByIds(db: D1Database, ids: readonly string[]): Promise<CanonicalTask[]> {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return [];
+  const placeholders = unique.map(() => "?").join(", ");
+  const { results } = await db.prepare(`
+    SELECT i.id, i.capture_id, i.title, i.primary_category, i.domain, i.requested_by,
+           i.project, i.status, i.due_at, i.created_at, i.updated_at,
+           r.raw_text, r.source,
+           COALESCE((SELECT json_group_array(flag) FROM item_flag WHERE item_id = i.id), '[]') AS flags_json
+    FROM item i
+    JOIN raw_capture r ON r.id = i.capture_id
+    WHERE i.id IN (${placeholders})
+    ORDER BY i.created_at DESC
+  `).bind(...unique).all<CanonicalTaskRow>();
+  return results.map(({ flags_json, ...task }) => ({ ...task, flags: JSON.parse(flags_json) as ItemFlag[] }));
+}

@@ -8,6 +8,7 @@ let items = [];
 let currentView = 'tasks';
 let reviewGuide = [];
 let reviewSession = null;
+let reviewPacket = null;
 let viewedStep = 1;
 let questionIndex = 0;
 let answerWasPasted = false;
@@ -154,6 +155,7 @@ async function initializeReview(){
 
 function showReviewStart(){
   reviewSession=null;
+  reviewPacket=null;
   document.getElementById('review-start').hidden=false;
   document.getElementById('review-session').hidden=true;
 }
@@ -161,10 +163,12 @@ function showReviewStart(){
 async function loadReview(id){
   setStatus('Loading Sunday Review…');
   reviewSession=await api(`/api/reviews/${encodeURIComponent(id)}`);
+  reviewPacket=null;
   rememberReview(reviewSession.id);
   viewedStep=Math.min(reviewSession.current_step,13);
   questionIndex=firstUnansweredQuestionIndex(viewedStep);
   renderReview();
+  await loadLatestReviewPacket();
   setStatus(`Review restored · last saved ${formatDate(reviewSession.updated_at)}`);
 }
 
@@ -191,10 +195,41 @@ function renderReview(){
   document.getElementById('review-archive').hidden=reviewSession.status==='archived';
   const ready=document.getElementById('review-ready');
   ready.hidden=reviewSession.status!=='ready_for_packet'&&!terminal;
-  if(terminal){ready.querySelector('h3').textContent=`Review ${reviewSession.status}`;ready.querySelector('p:last-child').textContent='This saved review is read-only. Start a new week or return to Tasks.';}
-  else{ready.querySelector('h3').textContent='Ready for the planning packet';ready.querySelector('p:last-child').textContent='Your answers and task references are saved. Packet generation is the next milestone and is not active yet.';}
+  if(terminal){ready.querySelector('h3').textContent=`Review ${reviewSession.status}`;document.getElementById('review-ready-message').textContent='This saved review is read-only. Existing packet versions remain available.';}
+  else{ready.querySelector('h3').textContent='Ready for the planning packet';document.getElementById('review-ready-message').textContent='Your answers, frozen task facts, and health context are ready for deterministic Markdown generation.';}
+  document.getElementById('packet-generate').hidden=!['ready_for_packet','completed'].includes(reviewSession.status);
+  renderReviewPacket();
   document.getElementById('review-question-card').hidden=terminal;
   if(!terminal)renderReviewQuestion();
+}
+
+function renderReviewPacket(){
+  const output=document.getElementById('packet-output');const copy=document.getElementById('packet-copy');const download=document.getElementById('packet-download');const meta=document.getElementById('packet-meta');const generate=document.getElementById('packet-generate');
+  output.hidden=!reviewPacket;copy.hidden=!reviewPacket;download.hidden=!reviewPacket;output.value=reviewPacket?.markdown||'';
+  meta.textContent=reviewPacket?`Packet version ${reviewPacket.version} · generated ${formatDate(reviewPacket.generated_at)} · immutable saved output${new Date(reviewPacket.generated_at)<new Date(reviewSession.updated_at)?' · review has newer edits; regenerate to include them':''}`:'';
+  generate.textContent=reviewPacket?'Regenerate new version':'Generate packet';
+}
+
+async function loadLatestReviewPacket(){
+  if(!reviewSession)return;
+  try{reviewPacket=await api(`/api/reviews/${encodeURIComponent(reviewSession.id)}/packet`);renderReviewPacket();}
+  catch(error){setStatus(error.message,true);}
+}
+
+async function generateReviewPacket(){
+  const button=document.getElementById('packet-generate');button.disabled=true;setStatus('Generating deterministic Markdown packet…');
+  try{reviewPacket=await api(`/api/reviews/${encodeURIComponent(reviewSession.id)}/packet`,{method:'POST'});renderReviewPacket();setStatus(`Planning packet version ${reviewPacket.version} generated and saved.`);}
+  catch(error){setStatus(error.message,true);}finally{button.disabled=false;}
+}
+
+async function copyReviewPacket(){
+  if(!reviewPacket)return;
+  try{await navigator.clipboard.writeText(reviewPacket.markdown);setStatus('Planning packet Markdown copied.');}
+  catch{const output=document.getElementById('packet-output');output.hidden=false;output.select();document.execCommand('copy');setStatus('Planning packet Markdown copied.');}
+}
+
+function downloadReviewPacket(){
+  if(!reviewPacket)return;const blob=new Blob([reviewPacket.markdown],{type:'text/markdown;charset=utf-8'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`sunday-planning-${reviewSession.week_start}-v${reviewPacket.version}.md`;link.click();setTimeout(()=>URL.revokeObjectURL(link.href),0);
 }
 
 function renderReviewProgress(){
@@ -311,7 +346,7 @@ async function reviewAction(action){
 
 document.getElementById('capture-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;try{await api('/api/items',{method:'POST',body:JSON.stringify({raw_text:document.getElementById('raw_text').value})});event.currentTarget.reset();await loadTasks();}catch(error){setStatus(error.message,true);}finally{button.disabled=false;}});
 document.getElementById('review-start-form').addEventListener('submit',async event=>{event.preventDefault();const button=event.submitter;button.disabled=true;const data=new FormData(event.currentTarget);const input={week_start:data.get('week_start'),week_end:data.get('week_end'),timezone:data.get('timezone')};try{
-  const query=new URLSearchParams(input);let session=await api(`/api/reviews/active?${query}`);if(!session)session=await api('/api/reviews',{method:'POST',body:JSON.stringify(input)});reviewSession=session;rememberReview(session.id);viewedStep=Math.min(session.current_step,13);questionIndex=firstUnansweredQuestionIndex(viewedStep);renderReview();setStatus('Sunday Review ready. Your answers will save as you go.');
+  const query=new URLSearchParams(input);let session=await api(`/api/reviews/active?${query}`);if(!session)session=await api('/api/reviews',{method:'POST',body:JSON.stringify(input)});reviewSession=session;reviewPacket=null;rememberReview(session.id);viewedStep=Math.min(session.current_step,13);questionIndex=firstUnansweredQuestionIndex(viewedStep);renderReview();await loadLatestReviewPacket();setStatus('Sunday Review ready. Your answers will save as you go.');
 }catch(error){setStatus(error.message,true);}finally{button.disabled=false;}});
 document.getElementById('resume-saved').addEventListener('click',()=>{const id=storedReviewId();if(id)loadReview(id).catch(error=>setStatus(error.message,true));});
 document.getElementById('review-answer-form').addEventListener('submit',event=>{event.preventDefault();const raw=document.getElementById('review-answer').value;if(raw.length===0){setStatus('Enter an answer or choose None, Unknown, Not applicable, or Defer.',true);return;}saveReviewResponse('answered',raw);});
@@ -323,6 +358,9 @@ document.getElementById('review-next').addEventListener('click',()=>{if(viewedSt
 document.getElementById('review-restart').addEventListener('click',()=>reviewAction('restart'));
 document.getElementById('review-abandon').addEventListener('click',()=>reviewAction('abandon'));
 document.getElementById('review-archive').addEventListener('click',()=>reviewAction('archive'));
+document.getElementById('packet-generate').addEventListener('click',generateReviewPacket);
+document.getElementById('packet-copy').addEventListener('click',copyReviewPacket);
+document.getElementById('packet-download').addEventListener('click',downloadReviewPacket);
 document.getElementById('health-week-form').addEventListener('submit',event=>{event.preventDefault();loadHealthWeek();});
 document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>switchView(tab.dataset.view)));
 

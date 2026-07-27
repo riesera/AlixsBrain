@@ -58,7 +58,10 @@
         <ol id="review-progress" class="review-progress" aria-label="Review progress"></ol>
         <div id="review-ready" class="ready-card" hidden>
           <p class="eyebrow">Collection complete</p><h3>Ready for the planning packet</h3>
-          <p>Your answers and task references are saved. Packet generation is the next milestone and is not active yet.</p>
+          <p id="review-ready-message">Your answers, frozen task facts, and health context are ready for deterministic Markdown generation.</p>
+          <div class="review-actions"><button id="packet-generate" type="button">Generate packet</button><button id="packet-copy" class="secondary" type="button" hidden>Copy Markdown</button><button id="packet-download" class="secondary" type="button" hidden>Download .md</button></div>
+          <p id="packet-meta" class="meta"></p>
+          <textarea id="packet-output" class="packet-output" rows="20" readonly hidden aria-label="Generated Sunday Planning Packet Markdown"></textarea>
         </div>
         <div id="review-question-card" class="question-card">
           <p id="review-step-count" class="eyebrow"></p>

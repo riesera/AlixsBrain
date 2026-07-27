@@ -518,3 +518,31 @@ Completed workouts, recent sleep, and logged nutrition are look-back evidence us
 ### Reconsideration Conditions
 
 Revisit the fixed look-back if real review use shows that a different evidence window or user-selectable comparison range materially improves planning clarity.
+
+---
+
+## D-018 — Packets Use Frozen Inputs and Immutable Versions
+
+**Status:** Accepted
+
+### Decision
+
+Each Sunday Planning Packet is generated deterministically from saved review answers, a frozen verified task snapshot, and the frozen health snapshot. Packet outputs are stored as immutable, incrementing versions. Regeneration creates a new version rather than overwriting a historical packet.
+
+New reviews snapshot verified canonical task fields and exact `raw_capture.raw_text` at session creation. A legacy session that predates task snapshots may backfill its still-readable referenced tasks once at first packet generation, but the packet must show the later snapshot timestamp and warn that those values may differ from the original review-start values.
+
+### Rationale
+
+Stable historical packets cannot be reproduced from task IDs if canonical tasks later change or disappear. Immutable versions preserve what was actually copied into a planning conversation and allow corrected review answers to produce a new auditable output.
+
+### Implications
+
+- Packet generation never edits canonical tasks, health data, calendars, or external systems.
+- Generated timestamps and version numbers may differ; otherwise identical frozen inputs produce identical Markdown.
+- The generator labels supported calculations and leaves unsupported classifications visible rather than interpreting free text.
+- Existing packets remain viewable after a session becomes terminal.
+- The dashboard warns when a saved packet predates later review edits.
+
+### Reconsideration Conditions
+
+Revisit storage and retention after real packet history establishes volume and usefulness. Do not replace immutable historical output with silent in-place regeneration.

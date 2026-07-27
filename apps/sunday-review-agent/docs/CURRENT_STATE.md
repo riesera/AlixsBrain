@@ -2,7 +2,7 @@
 
 **Last updated:** July 26, 2026  
 **Project stage:** V0.1 implementation  
-**Active milestone:** Deterministic Markdown Sunday Planning Packet generator
+**Active milestone:** First complete real-review field validation
 
 ## Executive Summary
 
@@ -11,7 +11,7 @@ The original documentation/inspection phase is complete. The active Cloudflare W
 - V0.1A canonical read-only task snapshot: complete;
 - V0.1B resumable guided review collector: complete for typed and pasted input;
 - shared Health Connect weekly context in Step 8: complete;
-- V0.1C Markdown planning packet: not implemented and is the next Sunday Review milestone.
+- V0.1C deterministic Markdown planning packet: complete.
 
 The dashboard is deployed at `https://alixsbrain-capture.alix-98e.workers.dev` behind the existing HTTP Basic authentication. It has Tasks, Sunday Review, and Health tabs.
 
@@ -24,6 +24,7 @@ Reusable domain modules:
 - `worker/src/task-reader.ts` — verified canonical task reads independent of Telegram and dashboard rendering;
 - `worker/src/review-sessions.ts` — review guide, session persistence, answers, progress, lifecycle, task references, and health snapshots;
 - `worker/src/health-reader.ts` — shared deterministic weekly health aggregation;
+- `worker/src/review-packet.ts` — frozen task snapshots, deterministic 23-section Markdown, provenance, raw appendices, and immutable packet versions;
 - `worker/src/review-api.ts` — thin authenticated review HTTP adapter;
 - `worker/src/health-api.ts` — thin authenticated weekly health read adapter;
 - `worker/public/` — temporary responsive AlixsBrain dashboard interface.
@@ -86,6 +87,25 @@ The snapshot excludes phone credentials and device IDs. It is frozen for resumab
 
 Energy balance is omitted unless both food and total-burned-energy coverage are complete for all seven days. Health output remains non-diagnostic.
 
+## V0.1C — Sunday Planning Packet
+
+Implemented behavior:
+
+- generates all 23 top-level sections in the stable `REVIEW_FLOW.md` order;
+- includes a self-contained planning request usable in a fresh ChatGPT conversation;
+- visibly labels system facts, manual input, generated flags, missing data, and unsupported analysis;
+- computes only documented task groupings such as overdue, due-this-week, undated, waiting, project, and domain;
+- refuses to infer reliable carry-forward or parse free text into high/low-brainpower, defer, pause, or drop classifications;
+- includes the frozen health evidence and manual subjective capacity response;
+- includes exact raw task wording and raw manual-input appendices;
+- stores immutable incrementing packet versions in D1;
+- warns when an older packet predates later review edits;
+- supports copy-to-clipboard and Markdown download from the dashboard;
+- permits regeneration without overwriting earlier packet versions;
+- makes no external changes and invokes no model.
+
+New sessions freeze verified task fields at review creation. The one legacy production session predates that table; its first packet generation may backfill still-readable referenced task fields and will visibly report the later snapshot timestamp.
+
 ## D1 State Owned by Sunday Review
 
 Migrations:
@@ -97,6 +117,9 @@ Migrations:
   - `sunday_review_step_state`
 - `0005_sunday_review_health_snapshot.sql`
   - `sunday_review_health_snapshot`
+- `0006_sunday_review_packets.sql`
+  - `sunday_review_task_snapshot`
+  - `sunday_review_packet`
 
 Review state is workflow state, not a second canonical task or health store.
 
@@ -111,13 +134,14 @@ All review reads/writes use existing dashboard Basic authentication:
 - `PUT /api/reviews/:id/answers/:step/:field_key`
 - `PUT /api/reviews/:id/steps/:step`
 - `PUT /api/reviews/:id/health-context`
+- `GET /api/reviews/:id/packet`
+- `POST /api/reviews/:id/packet`
 - `POST /api/reviews/:id/actions`
 
 Canonical weekly health validation is available separately at `GET /api/health/weekly`.
 
 ## Explicitly Not Built
 
-- Markdown Sunday Planning Packet generation, copy, download, or snapshot persistence;
 - ChatGPT/API model integration;
 - automatic prioritization or scheduling;
 - task/calendar/workout/reminder write actions;
@@ -127,22 +151,20 @@ Canonical weekly health validation is available separately at `GET /api/health/w
 - background Health Connect synchronization;
 - multi-user identity or authorization.
 
-## Next Milestone — V0.1C Packet Generator
+## Next Milestone — Complete Real-Review Field Validation
 
-Build a deterministic Markdown generator from a saved review session, its referenced canonical task read, and its frozen health context.
+Run one end-to-end Sunday Review using real task and health data.
 
-Acceptance boundary:
+Field-validation checklist:
 
-1. use the stable packet section order in `REVIEW_FLOW.md`;
-2. label canonical facts, manual input, generated grouping, uncertainty, and missing data distinctly;
-3. preserve the explicit upcoming week and timezone;
-4. include the health evidence range/retrieval time/coverage without diagnostic interpretation;
-5. include raw task wording and raw manual input where the packet requires it;
-6. regenerate deterministically from the same session snapshot;
-7. provide copy/download from the dashboard;
-8. make no external changes.
+1. finish or deliberately skip all 13 collection steps;
+2. generate packet version 1;
+3. inspect provenance, missing-data notices, task groupings, health coverage, and raw appendices;
+4. copy the Markdown into a fresh ChatGPT conversation and confirm it is self-contained;
+5. correct at least one saved answer, regenerate version 2, and verify version 1 remains unchanged;
+6. record confusing prompts, excessive packet detail, missing context, and any unsupported grouping that is actually needed.
 
-After V0.1C, validate one complete real Sunday Review before expanding carry-forward intelligence or additional integrations.
+After field validation, choose between V0.2 review continuity/carry-forward work and the separate Health Connect historical-import/compaction milestone based on observed value.
 
 ## Verification and Operations
 

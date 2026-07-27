@@ -13,6 +13,7 @@ import {
   type ReviewStepState
 } from "./review-sessions";
 import type { Env } from "./types";
+import { createReviewPacket, latestReviewPacket } from "./review-packet";
 
 const json = (value: unknown, status = 200): Response =>
   Response.json(value, { status, headers: { "cache-control": "no-store" } });
@@ -78,6 +79,14 @@ export async function reviewApi(request: Request, env: Env, url: URL): Promise<R
     const healthMatch = pathname.match(/^\/api\/reviews\/([^/]+)\/health-context$/);
     if (request.method === "PUT" && healthMatch) {
       return json(await refreshReviewHealthContext(env.DB, decodeURIComponent(healthMatch[1])));
+    }
+
+    const packetMatch = pathname.match(/^\/api\/reviews\/([^/]+)\/packet$/);
+    if (packetMatch && request.method === "GET") {
+      return json(await latestReviewPacket(env.DB, decodeURIComponent(packetMatch[1])));
+    }
+    if (packetMatch && request.method === "POST") {
+      return json(await createReviewPacket(env.DB, decodeURIComponent(packetMatch[1])), 201);
     }
 
     const answerMatch = pathname.match(/^\/api\/reviews\/([^/]+)\/answers\/(\d+)\/([^/]+)$/);

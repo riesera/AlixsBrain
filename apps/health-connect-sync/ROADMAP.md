@@ -32,7 +32,7 @@ This is a shared External Brain integration. It supplies trustworthy health cont
 - Keep subjective energy, stress, pain, illness, recovery, and realistic capacity as manual questions.
 - Expose the saved, verified context to the future Markdown packet generator without diagnostic claims.
 
-The Markdown packet generator is still a Sunday Review milestone; health context is ready for it but does not generate the packet itself.
+The Sunday Review Markdown packet generator now consumes the frozen health context with evidence dates, retrieval time, coverage, warnings, and non-diagnostic labels.
 
 ## Next — Historical export importer and compaction
 

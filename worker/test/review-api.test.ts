@@ -86,4 +86,23 @@ describe("review session API", () => {
     expect(value.health_context.coverage.stored_days).toBe(1);
     expect(value.health_context.metrics.steps.total).toBe(8000);
   });
+
+  it("generates and retrieves an immutable Markdown packet through the authenticated API", async () => {
+    const created = await request("/api/reviews", {
+      method: "POST",
+      body: JSON.stringify({ week_start: "2026-10-12", week_end: "2026-10-18", timezone: "America/Chicago" })
+    });
+    const session = await created.json<{ id: string }>();
+    await request(`/api/reviews/${session.id}/steps/1`, { method: "PUT", body: JSON.stringify({ state: "skipped" }) });
+    for (let step = 3; step <= 13; step += 1) {
+      await request(`/api/reviews/${session.id}/steps/${step}`, { method: "PUT", body: JSON.stringify({ state: "skipped" }) });
+    }
+    const generated = await request(`/api/reviews/${session.id}/packet`, { method: "POST" });
+    expect(generated.status).toBe(201);
+    const packet = await generated.json<{ version: number; markdown: string }>();
+    expect(packet.version).toBe(1);
+    expect(packet.markdown).toContain("# Sunday Planning Packet");
+    const latest = await request(`/api/reviews/${session.id}/packet`);
+    expect((await latest.json<{ version: number }>()).version).toBe(1);
+  });
 });
