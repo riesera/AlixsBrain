@@ -225,6 +225,8 @@ Reduce repeated questioning and make unfinished work more deliberate.
 
 ## Next: V0.3 — Project and Role Awareness
 
+**Sequencing gate:** Before implementation begins, complete the Health Connect historical-export import and compaction milestone, including investigation of a trustworthy structured stress signal. Process the full available archive locally and expose only verified, compacted summaries—not the raw archive—to the External Brain and Sunday Review context.
+
 ### Goal
 
 Move from a task-only review toward a visible project portfolio and realistic role activation.

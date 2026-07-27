@@ -58,10 +58,14 @@ Build the historical Health Connect export importer together with its compaction
 
 1. inspect and version the actual downloaded export format;
 2. select it through Android's system file picker;
-3. stream and normalize it locally without uploading the raw archive;
-4. deduplicate overlap with recent API-derived days;
-5. compact by retention tier before upload;
-6. upload resumable batches with counts and checksums;
-7. report success only after D1 verification.
+3. process the entire available historical archive locally without uploading the raw archive;
+4. inspect the export and available sources for a trustworthy structured stress signal, preserving provenance and leaving subjective stress manual when none exists;
+5. stream and normalize records without loading the full archive into memory or model context;
+6. deduplicate overlap with recent API-derived days;
+7. compact by retention tier before upload;
+8. upload resumable batches with counts and checksums;
+9. report success only after D1 verification.
+
+Only verified, compacted historical summaries should enter the External Brain and future Sunday Review context. This milestone is the selected next implementation focus after the current Sunday Review field validation and must be completed before Sunday Review V0.3 Project and Role Awareness begins.
 
 See `ROADMAP.md` and the External Brain/Sunday Review decision logs for the governing retention and missing-data rules.

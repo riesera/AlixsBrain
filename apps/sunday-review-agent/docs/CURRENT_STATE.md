@@ -164,7 +164,13 @@ Field-validation checklist:
 5. correct at least one saved answer, regenerate version 2, and verify version 1 remains unchanged;
 6. record confusing prompts, excessive packet detail, missing context, and any unsupported grouping that is actually needed.
 
-After field validation, choose between V0.2 review continuity/carry-forward work and the separate Health Connect historical-import/compaction milestone based on observed value.
+After field validation, the selected sequence is:
+
+1. add trustworthy structured stress context when the available Health Connect export or source actually provides it;
+2. import the entire available historical health archive locally, then normalize, deduplicate, compact, and verify it before exposing compacted summaries to the External Brain or review context;
+3. begin Sunday Review V0.3 Project and Role Awareness only after that health milestone is complete.
+
+The raw multi-year archive must not be placed directly into a Sunday packet or model context. Subjective stress remains a manual review answer when no reliable structured measurement is available. V0.2 continuity remains on the roadmap but is not the next selected implementation milestone.
 
 ## Verification and Operations
 

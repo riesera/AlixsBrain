@@ -38,13 +38,17 @@ The Sunday Review Markdown packet generator now consumes the frozen health conte
 
 - Select a Health Connect export through Android's system file picker.
 - Inspect and version the actual export format before importing it.
+- Import the entire available historical archive, subject to format validation and the retention rules below.
 - Stream the archive locally instead of uploading or fully unpacking the raw archive.
 - Normalize records, deduplicate overlap with recent API data, and checkpoint resumable progress.
+- Inspect the export and available sources for a trustworthy structured stress signal; ingest it with explicit units and provenance when available, but do not derive or invent stress from unrelated measurements.
 - Retain useful detail for 90 days, daily summaries for about two years, weekly summaries for about five years, and monthly summaries indefinitely.
 - Upload compacted batches with counts and checksums; report success only after server verification.
 - Never infer zero from missing data or invent historical nutrition/hydration targets.
 
-The historical importer and compaction verifier are one milestone: a multi-year archive will not be uploaded before the retention rules can be enforced safely.
+The historical importer and compaction verifier are one milestone: a multi-year archive will not be uploaded before the retention rules can be enforced safely. Only verified, compacted summaries enter the External Brain and Sunday Review context; the raw archive remains a local import source rather than packet or model context. If no reliable structured stress field is available, subjective stress remains a manual Sunday Review answer.
+
+Complete this milestone before beginning Sunday Review V0.3 Project and Role Awareness.
 
 ## Later — Incremental operation
 
